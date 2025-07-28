@@ -7,7 +7,7 @@ import { errorHandler } from './middleware/errorHandler';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from './config/swagger';
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -56,4 +56,7 @@ const start = async () => {
     }
 };
 
-start(); 
+// Only start the server if we're not in a test environment
+if (process.env.NODE_ENV !== 'test') {
+    start();
+} 

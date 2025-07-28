@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { ProjectService } from '@/services/projectService';
-import { ProjectSchema, ProjectStatus } from '@/models/types';
+import { ProjectService } from '../services/projectService';
+import { ProjectSchema, ProjectStatus } from '../models/types';
 
 export class ProjectController {
     /**
@@ -69,8 +69,8 @@ export class ProjectController {
     static deleteProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            await ProjectService.deleteProject(id);
-            res.status(204).send();
+            const deletedProject = await ProjectService.deleteProject(id);
+            res.status(200).json(deletedProject);
         } catch (error) {
             next(error);
         }

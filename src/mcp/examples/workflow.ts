@@ -1,5 +1,5 @@
 import { Client, Server } from '../sdk';
-import { ProjectStatus, TaskStatus } from '@/models/types';
+import { ProjectStatus, TaskStatus } from '../../models/types';
 import { projectTools } from '../tools/projectTools';
 import { taskTools } from '../tools/taskTools';
 

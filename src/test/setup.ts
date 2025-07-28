@@ -1,56 +1,107 @@
 import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
+import { connectRedis, disconnectRedis } from '../config/redis';
+import redisClient from '../config/redis';
+import { getTestDatabaseUrl } from './config';
 
-// Load test environment variables
-dotenv.config({ path: '.env.test' });
+// Set test environment
+process.env.NODE_ENV = 'test';
 
-// Create a new Prisma client for tests
-const prisma = new PrismaClient();
+// Get test database URL
+const testDatabaseUrl = getTestDatabaseUrl();
 
-// Global setup before all tests
-beforeAll(async () => {
-    // Clean up database before tests
-    await prisma.$connect();
-    await cleanDatabase();
+// Create a test-specific Prisma client
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: testDatabaseUrl,
+        },
+    },
 });
 
-// Global teardown after all tests
-afterAll(async () => {
-    await cleanDatabase();
-    await prisma.$disconnect();
-});
+// Track if environment is initialized
+let isInitialized = false;
 
-// Clean up database between tests
-afterEach(async () => {
-    await cleanDatabase();
-});
-
-interface TableName {
-    tablename: string;
-}
-
-// Helper to clean the test database
-async function cleanDatabase(): Promise<void> {
-    const tablenames = await prisma.$queryRaw<TableName[]>`
-    SELECT tablename FROM pg_tables WHERE schemaname='public'
-  `;
-
-    const tables = tablenames
-        .map(({ tablename }: TableName) => tablename)
-        .filter((name: string) => name !== '_prisma_migrations')
-        .map((name: string) => `"public"."${name}"`)
-        .join(', ');
-
+/**
+ * Clean up database and cache
+ */
+async function cleanupTestEnvironment() {
     try {
-        await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
+        // Clear database in correct order to avoid foreign key constraints
+        await prisma.task.deleteMany();
+        await prisma.project.deleteMany();
+
+        // Clear Redis cache if connected
+        if (redisClient.isOpen) {
+            await redisClient.flushDb();
+        }
     } catch (error) {
-        console.log('Error cleaning database:', error);
+        console.error('Error during test cleanup:', error);
+        // Don't throw to avoid stopping tests
     }
 }
 
-// Make prisma available globally in tests
-declare global {
-    // eslint-disable-next-line no-var
-    var prisma: PrismaClient;
+/**
+ * Initialize test environment
+ */
+async function initializeTestEnvironment() {
+    if (isInitialized) {
+        return; // Already initialized
+    }
+
+    try {
+        console.log('🧪 Test Environment Setup');
+        console.log('📊 Database URL:', testDatabaseUrl);
+        console.log('🔗 Connecting to test database...');
+
+        // Try to connect to the test database
+        await prisma.$connect();
+        await connectRedis();
+        await cleanupTestEnvironment();
+        isInitialized = true;
+
+        console.log('✅ Test environment initialized successfully');
+        console.log('🧹 Database and cache cleaned');
+    } catch (error) {
+        console.error('❌ Error initializing test environment:', error);
+
+        // Provide helpful error message for database connection issues
+        if (error instanceof Error && (error.message.includes('P1010') || error.message.includes('denied access'))) {
+            console.error('\n🔧 Database Setup Required:');
+            console.error('The test database does not exist or you do not have access.');
+            console.error('\n📋 To fix this, run these commands:');
+            console.error('1. Create test database: createdb taskflow_test');
+            console.error('2. Run migrations: npx prisma migrate deploy');
+            console.error('3. Or use the setup script: npm run test:setup');
+            console.error('\n💡 Alternative: Use the main database for tests by setting:');
+            console.error('export TEST_DATABASE_URL="postgresql://localhost:5432/taskflow"');
+            console.error('\n🔍 Debug: Run "npm run test:verify-env" to check environment variables');
+        }
+
+        throw error;
+    }
 }
-global.prisma = prisma; 
+
+/**
+ * Clean up test environment
+ */
+async function teardownTestEnvironment() {
+    try {
+        console.log('🧹 Cleaning up test environment...');
+        await cleanupTestEnvironment();
+        await prisma.$disconnect();
+        await disconnectRedis();
+        isInitialized = false;
+        console.log('✅ Test environment cleaned up successfully');
+    } catch (error) {
+        console.error('❌ Error during test teardown:', error);
+        // Don't throw to avoid stopping tests
+    }
+}
+
+// Jest lifecycle hooks
+beforeAll(initializeTestEnvironment);
+afterAll(teardownTestEnvironment);
+beforeEach(cleanupTestEnvironment);
+
+// Export prisma for use in tests if needed
+export { prisma }; 

@@ -14,7 +14,9 @@ redisClient.on('connect', () => {
 
 export const connectRedis = async () => {
     try {
-        await redisClient.connect();
+        if (!redisClient.isOpen) {
+            await redisClient.connect();
+        }
     } catch (error) {
         console.error('Redis Connection Error:', error);
         throw error;
@@ -23,7 +25,9 @@ export const connectRedis = async () => {
 
 export const disconnectRedis = async () => {
     try {
-        await redisClient.disconnect();
+        if (redisClient.isOpen) {
+            await redisClient.disconnect();
+        }
     } catch (error) {
         console.error('Redis Disconnect Error:', error);
         throw error;

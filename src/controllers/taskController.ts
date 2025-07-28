@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { TaskService } from '@/services/taskService';
-import { ProjectService } from '@/services/projectService';
-import { TaskSchema, TaskStatus } from '@/models/types';
+import { TaskService } from '../services/taskService';
+import { ProjectService } from '../services/projectService';
+import { TaskSchema, TaskStatus } from '../models/types';
 
 export class TaskController {
     /**
@@ -80,8 +80,8 @@ export class TaskController {
     static deleteTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            await TaskService.deleteTask(id);
-            res.status(204).send();
+            const deletedTask = await TaskService.deleteTask(id);
+            res.status(200).json(deletedTask);
         } catch (error) {
             next(error);
         }

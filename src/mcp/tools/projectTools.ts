@@ -1,18 +1,16 @@
 import { z } from 'zod';
 import { McpError } from '../sdk';
-import { ProjectService } from '@/services/projectService';
-import { ProjectSchema, ProjectStatus, DateRangeSchema, IdSchema } from '@/models/types';
+import { ProjectService } from '../../services/projectService';
+import { ProjectSchema, ProjectStatus, DateRangeSchema, IdSchema } from '../../models/types';
 import { MCPTool } from '../types';
-import { AppError } from '@/utils/errors';
-import prisma from '@/config/database';
+import { NotFoundError } from '../../utils/errors';
+import prisma from '../../config/database';
 
 // Initialize database connection
 prisma.$connect().catch((error: Error) => {
     console.error('Failed to connect to database:', error);
     process.exit(1);
 });
-
-const projectService = new ProjectService();
 
 const getProjectStatus: MCPTool = {
     name: 'get_project_status',
@@ -21,10 +19,10 @@ const getProjectStatus: MCPTool = {
     handler: async (params) => {
         try {
             const { id } = IdSchema.parse(params);
-            const project = await projectService.getProjectById(id);
+            const project = await ProjectService.getProjectById(id);
             return { status: project.status };
         } catch (error) {
-            if (error instanceof AppError) {
+            if (error instanceof NotFoundError) {
                 throw new McpError(404, error.message);
             }
             throw new McpError(500, 'Failed to get project status');
@@ -41,7 +39,7 @@ const findProjectsByStatus: MCPTool = {
     handler: async (params) => {
         try {
             const { status } = params as { status: ProjectStatus };
-            const projects = await projectService.getProjects({ status });
+            const projects = await ProjectService.getProjects({ status });
             return { projects };
         } catch (error) {
             throw new McpError(500, 'Failed to find projects by status');
@@ -56,7 +54,7 @@ const findProjectsByDateRange: MCPTool = {
     handler: async (params) => {
         try {
             const { startDate, endDate } = DateRangeSchema.parse(params);
-            const projects = await projectService.getProjects({ startDate, endDate });
+            const projects = await ProjectService.getProjects({ startDate, endDate });
             return { projects };
         } catch (error) {
             if (error instanceof z.ZodError) {
@@ -74,7 +72,7 @@ const createProject: MCPTool = {
     handler: async (params) => {
         try {
             const projectData = ProjectSchema.parse(params);
-            const project = await projectService.createProject(projectData);
+            const project = await ProjectService.createProject(projectData);
             return { project };
         } catch (error) {
             console.error('Create project error:', error);
@@ -96,10 +94,10 @@ const updateProjectStatus: MCPTool = {
     handler: async (params) => {
         try {
             const { id, status } = params as { id: string; status: ProjectStatus };
-            const project = await projectService.updateProject(id, { status });
+            const project = await ProjectService.updateProject(id, { status });
             return { project };
         } catch (error) {
-            if (error instanceof AppError) {
+            if (error instanceof NotFoundError) {
                 throw new McpError(404, error.message);
             }
             throw new McpError(500, 'Failed to update project status');

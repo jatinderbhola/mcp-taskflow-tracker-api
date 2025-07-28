@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { AppError, NotFoundError, ValidationError } from '@/utils/errors';
+import { AppError, NotFoundError, ValidationError } from '../utils/errors';
 
 interface ErrorResponse {
     status: 'error';

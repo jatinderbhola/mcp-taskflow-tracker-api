@@ -1,13 +1,15 @@
-import { Project, ProjectStatus } from '@prisma/client';
+import { Project } from '@prisma/client';
 import prisma from '../config/database';
-import { NotFoundError } from '../utils/errors';
 import { CacheService } from './cacheService';
+import { NotFoundError } from '../utils/errors';
+import { ProjectStatus } from '../models/types';
+import { convertProjectDates, convertProjectDatesArray, ProjectWithDates } from '../utils/dateUtils';
 
 export class ProjectService {
     /**
      * Create a new project
      */
-    static async createProject(data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
+    static async createProject(data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectWithDates> {
         const project = await prisma.project.create({ data });
         await CacheService.invalidateProject(project.id);
         return project;
@@ -20,12 +22,12 @@ export class ProjectService {
         status?: ProjectStatus;
         startDate?: Date;
         endDate?: Date;
-    }): Promise<Project[]> {
+    }): Promise<ProjectWithDates[]> {
         const cacheKey = CacheService.projectKey(undefined, filters);
         const cached = await CacheService.get<Project[]>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertProjectDatesArray(cached);
         }
 
         const where = {
@@ -42,12 +44,12 @@ export class ProjectService {
     /**
      * Get a project by ID
      */
-    static async getProjectById(id: string): Promise<Project> {
+    static async getProjectById(id: string): Promise<ProjectWithDates> {
         const cacheKey = CacheService.projectKey(id);
         const cached = await CacheService.get<Project>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertProjectDates(cached);
         }
 
         const project = await prisma.project.findUnique({ where: { id } });
@@ -62,39 +64,49 @@ export class ProjectService {
     /**
      * Update a project
      */
-    static async updateProject(id: string, data: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Project> {
-        const project = await prisma.project.update({
-            where: { id },
-            data,
-        });
+    static async updateProject(id: string, data: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>): Promise<ProjectWithDates> {
+        try {
+            const project = await prisma.project.update({
+                where: { id },
+                data,
+            });
 
-        await CacheService.invalidateProject(id);
-        return project;
+            await CacheService.invalidateProject(id);
+            return project;
+        } catch (error: any) {
+            if (error.code === 'P2025' || error.message.includes('Record not found')) {
+                throw new NotFoundError(`Project with ID ${id} not found`);
+            }
+            throw error;
+        }
     }
 
     /**
      * Delete a project
      */
-    static async deleteProject(id: string): Promise<Project> {
-        const project = await prisma.project.delete({
-            where: { id },
-        });
+    static async deleteProject(id: string): Promise<ProjectWithDates> {
+        try {
+            const project = await prisma.project.delete({
+                where: { id },
+            });
 
-        await CacheService.invalidateProject(id);
-        return project;
+            await CacheService.invalidateProject(id);
+            return project;
+        } catch (error: any) {
+            if (error.code === 'P2025' || error.message.includes('Record not found')) {
+                throw new NotFoundError(`Project with ID ${id} not found`);
+            }
+            throw error;
+        }
     }
 
     /**
-     * Validate project exists
+     * Validate that a project exists
      */
-    static async validateProjectExists(id: string): Promise<void> {
-        const exists = await prisma.project.findUnique({
-            where: { id },
-            select: { id: true },
-        });
-
-        if (!exists) {
-            throw new NotFoundError(`Project with ID ${id} not found`);
+    static async validateProjectExists(projectId: string): Promise<void> {
+        const project = await prisma.project.findUnique({ where: { id: projectId } });
+        if (!project) {
+            throw new NotFoundError(`Project with ID ${projectId} not found`);
         }
     }
 } 

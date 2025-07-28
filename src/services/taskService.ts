@@ -1,13 +1,15 @@
-import { Task, TaskStatus } from '@prisma/client';
+import { Task } from '@prisma/client';
 import prisma from '../config/database';
-import { NotFoundError } from '../utils/errors';
 import { CacheService } from './cacheService';
+import { NotFoundError } from '../utils/errors';
+import { TaskStatus } from '../models/types';
+import { convertTaskDates, convertTaskDatesArray, TaskWithDates } from '../utils/dateUtils';
 
 export class TaskService {
     /**
      * Create a new task
      */
-    static async createTask(data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
+    static async createTask(data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<TaskWithDates> {
         const task = await prisma.task.create({ data });
         await CacheService.invalidateTask(task.id, task.projectId);
         return task;
@@ -20,12 +22,12 @@ export class TaskService {
         status?: TaskStatus;
         assignedTo?: string;
         dueDate?: Date;
-    }): Promise<Task[]> {
+    }): Promise<TaskWithDates[]> {
         const cacheKey = CacheService.taskKey(undefined, undefined, filters);
         const cached = await CacheService.get<Task[]>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertTaskDatesArray(cached);
         }
 
         const where = {
@@ -42,12 +44,12 @@ export class TaskService {
     /**
      * Get tasks by project ID
      */
-    static async getTasksByProjectId(projectId: string): Promise<Task[]> {
+    static async getTasksByProjectId(projectId: string): Promise<TaskWithDates[]> {
         const cacheKey = CacheService.taskKey(undefined, projectId);
         const cached = await CacheService.get<Task[]>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertTaskDatesArray(cached);
         }
 
         const tasks = await prisma.task.findMany({
@@ -61,12 +63,12 @@ export class TaskService {
     /**
      * Get a task by ID
      */
-    static async getTaskById(id: string): Promise<Task> {
+    static async getTaskById(id: string): Promise<TaskWithDates> {
         const cacheKey = CacheService.taskKey(id);
         const cached = await CacheService.get<Task>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertTaskDates(cached);
         }
 
         const task = await prisma.task.findUnique({ where: { id } });
@@ -81,47 +83,61 @@ export class TaskService {
     /**
      * Update a task
      */
-    static async updateTask(id: string, data: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Task> {
-        const task = await prisma.task.update({
-            where: { id },
-            data,
-        });
+    static async updateTask(id: string, data: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>): Promise<TaskWithDates> {
+        try {
+            const task = await prisma.task.update({
+                where: { id },
+                data,
+            });
 
-        await CacheService.invalidateTask(id, task.projectId);
-        return task;
+            await CacheService.invalidateTask(id, task.projectId);
+            return task;
+        } catch (error: any) {
+            if (error.code === 'P2025' || error.message.includes('Record not found')) {
+                throw new NotFoundError(`Task with ID ${id} not found`);
+            }
+            throw error;
+        }
     }
 
     /**
      * Delete a task
      */
-    static async deleteTask(id: string): Promise<Task> {
-        const task = await prisma.task.delete({
-            where: { id },
-        });
+    static async deleteTask(id: string): Promise<TaskWithDates> {
+        try {
+            const task = await prisma.task.delete({
+                where: { id },
+            });
 
-        await CacheService.invalidateTask(id, task.projectId);
-        return task;
+            await CacheService.invalidateTask(id, task.projectId);
+            return task;
+        } catch (error: any) {
+            if (error.code === 'P2025' || error.message.includes('Record not found')) {
+                throw new NotFoundError(`Task with ID ${id} not found`);
+            }
+            throw error;
+        }
     }
 
     /**
      * Get overdue tasks
      */
-    static async getOverdueTasks(): Promise<Task[]> {
+    static async getOverdueTasks(): Promise<TaskWithDates[]> {
         const cacheKey = CacheService.taskKey(undefined, undefined, { overdue: true });
         const cached = await CacheService.get<Task[]>(cacheKey);
 
         if (cached) {
-            return cached;
+            return convertTaskDatesArray(cached);
         }
 
-        const tasks = await prisma.task.findMany({
+        const overdueTasks = await prisma.task.findMany({
             where: {
                 dueDate: { lt: new Date() },
                 status: { not: TaskStatus.COMPLETED },
             },
         });
 
-        await CacheService.set(cacheKey, tasks, 300); // Cache for 5 minutes only
-        return tasks;
+        await CacheService.set(cacheKey, overdueTasks);
+        return overdueTasks;
     }
 } 

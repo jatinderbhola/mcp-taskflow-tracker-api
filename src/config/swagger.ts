@@ -7,10 +7,14 @@ export const swaggerDocument = {
         version: '1.0.0',
         description: 'API for managing projects and tasks with MCP integration',
     },
-    servers: [
+    tags: [
         {
-            url: 'http://localhost:3000',
-            description: 'Local development server',
+            name: 'Projects',
+            description: 'Operations related to project management',
+        },
+        {
+            name: 'Tasks',
+            description: 'Operations related to task management',
         },
     ],
     components: {
@@ -23,10 +27,7 @@ export const swaggerDocument = {
                     description: { type: 'string', nullable: true },
                     startDate: { type: 'string', format: 'date-time' },
                     endDate: { type: 'string', format: 'date-time' },
-                    status: {
-                        type: 'string',
-                        enum: ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
-                    },
+                    status: { type: 'string', enum: Object.values(ProjectStatus) },
                     createdAt: { type: 'string', format: 'date-time' },
                     updatedAt: { type: 'string', format: 'date-time' },
                 },
@@ -38,10 +39,7 @@ export const swaggerDocument = {
                     id: { type: 'string' },
                     title: { type: 'string' },
                     assignedTo: { type: 'string' },
-                    status: {
-                        type: 'string',
-                        enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
-                    },
+                    status: { type: 'string', enum: Object.values(TaskStatus) },
                     dueDate: { type: 'string', format: 'date-time' },
                     projectId: { type: 'string' },
                     createdAt: { type: 'string', format: 'date-time' },
@@ -52,19 +50,11 @@ export const swaggerDocument = {
             Error: {
                 type: 'object',
                 properties: {
-                    status: { type: 'string', enum: ['error'] },
                     message: { type: 'string' },
                     code: { type: 'string' },
-                    details: { type: 'object' },
+                    statusCode: { type: 'number' },
                 },
-                required: ['status', 'message'],
-            },
-        },
-        securitySchemes: {
-            bearerAuth: {
-                type: 'http',
-                scheme: 'bearer',
-                bearerFormat: 'JWT',
+                required: ['message', 'statusCode'],
             },
         },
     },
@@ -77,20 +67,17 @@ export const swaggerDocument = {
                     {
                         name: 'status',
                         in: 'query',
-                        schema: {
-                            type: 'string',
-                            enum: ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
-                        },
+                        schema: { type: 'string', enum: Object.values(ProjectStatus) },
                     },
                     {
                         name: 'startDate',
                         in: 'query',
-                        schema: { type: 'string', format: 'date' },
+                        schema: { type: 'string', format: 'date-time' },
                     },
                     {
                         name: 'endDate',
                         in: 'query',
-                        schema: { type: 'string', format: 'date' },
+                        schema: { type: 'string', format: 'date-time' },
                     },
                 ],
                 responses: {
@@ -120,10 +107,18 @@ export const swaggerDocument = {
                 },
                 responses: {
                     201: {
-                        description: 'Project created successfully',
+                        description: 'Project created',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
+                            },
+                        },
+                    },
+                    400: {
+                        description: 'Validation error',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
                             },
                         },
                     },
@@ -144,7 +139,7 @@ export const swaggerDocument = {
                 ],
                 responses: {
                     200: {
-                        description: 'Project details',
+                        description: 'Project found',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
@@ -182,10 +177,18 @@ export const swaggerDocument = {
                 },
                 responses: {
                     200: {
-                        description: 'Project updated successfully',
+                        description: 'Project updated',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
+                            },
+                        },
+                    },
+                    400: {
+                        description: 'Validation error',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
                             },
                         },
                     },
@@ -211,7 +214,14 @@ export const swaggerDocument = {
                     },
                 ],
                 responses: {
-                    204: { description: 'Project deleted successfully' },
+                    200: {
+                        description: 'Project deleted',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Project' },
+                            },
+                        },
+                    },
                     404: {
                         description: 'Project not found',
                         content: {
@@ -231,10 +241,7 @@ export const swaggerDocument = {
                     {
                         name: 'status',
                         in: 'query',
-                        schema: {
-                            type: 'string',
-                            enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
-                        },
+                        schema: { type: 'string', enum: Object.values(TaskStatus) },
                     },
                     {
                         name: 'assignedTo',
@@ -244,7 +251,7 @@ export const swaggerDocument = {
                     {
                         name: 'dueDate',
                         in: 'query',
-                        schema: { type: 'string', format: 'date' },
+                        schema: { type: 'string', format: 'date-time' },
                     },
                 ],
                 responses: {
@@ -274,10 +281,26 @@ export const swaggerDocument = {
                 },
                 responses: {
                     201: {
-                        description: 'Task created successfully',
+                        description: 'Task created',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
+                            },
+                        },
+                    },
+                    400: {
+                        description: 'Validation error',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
+                    404: {
+                        description: 'Project not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
                             },
                         },
                     },
@@ -298,7 +321,7 @@ export const swaggerDocument = {
                 ],
                 responses: {
                     200: {
-                        description: 'Task details',
+                        description: 'Task found',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
@@ -336,10 +359,18 @@ export const swaggerDocument = {
                 },
                 responses: {
                     200: {
-                        description: 'Task updated successfully',
+                        description: 'Task updated',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
+                            },
+                        },
+                    },
+                    400: {
+                        description: 'Validation error',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
                             },
                         },
                     },
@@ -365,9 +396,51 @@ export const swaggerDocument = {
                     },
                 ],
                 responses: {
-                    204: { description: 'Task deleted successfully' },
+                    200: {
+                        description: 'Task deleted',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Task' },
+                            },
+                        },
+                    },
                     404: {
                         description: 'Task not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        '/api/tasks/project/{projectId}': {
+            get: {
+                tags: ['Tasks'],
+                summary: 'Get tasks for a specific project',
+                parameters: [
+                    {
+                        name: 'projectId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
+                responses: {
+                    200: {
+                        description: 'List of tasks for the project',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: { $ref: '#/components/schemas/Task' },
+                                },
+                            },
+                        },
+                    },
+                    404: {
+                        description: 'Project not found',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Error' },
