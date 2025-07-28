@@ -1,0 +1,103 @@
+# RBC Backend Assessment - Cursor AI Rules
+# Project: Project Tracker API with MCP Integration
+# Assessment Duration: 3-5 hours
+
+## Core Development Principles
+- Follow clean code principles: DRY, KISS, SOLID
+- Use TypeScript strict mode with proper type definitions
+- Implement layered architecture: Controllers → Services → Models
+- Write small, focused functions (under 20 lines when possible)
+- Use meaningful, descriptive naming conventions
+
+## Technology Stack Requirements
+- Node.js 18+ with TypeScript
+- Express.js framework
+- PostgreSQL with Prisma ORM
+- Zod for validation
+- Jest for testing
+- Swagger/OpenAPI for documentation
+- MCP SDK for agent integration
+
+## Code Style Guidelines
+- Use async/await over promises
+- Implement proper error handling with custom error classes
+- Use dependency injection for better testability
+- Follow REST API conventions
+- Add JSDoc comments for public functions
+- Use environment variables for configuration
+
+## File Structure Patterns
+- Controllers: Handle HTTP requests/responses only
+- Services: Contain business logic
+- Models: Define data structures and validation
+- Middleware: Cross-cutting concerns (auth, validation, logging)
+- Utils: Pure helper functions
+
+## Database Conventions
+- Use Prisma schema definitions
+- Follow snake_case for database columns
+- Use camelCase for TypeScript interfaces
+- Implement proper relationships and constraints
+- Add created_at/updated_at timestamps
+
+## API Design Standards
+- Use RESTful endpoints
+- Implement proper HTTP status codes
+- Add request/response validation
+- Include error handling middleware
+- Support query parameters for filtering
+
+## MCP Integration Focus
+- Create simple, focused MCP tools
+- Use structured input/output schemas
+- Implement proper error handling in tools
+- Add example usage documentation
+- Keep agent responses JSON-structured
+
+## Testing Requirements
+- Write unit tests for services
+- Add integration tests for API endpoints
+- Test MCP tool functionality
+- Aim for >80% coverage on core features
+- Use descriptive test names
+
+## Commit Message Format
+- Use conventional commits: feat/fix/docs/test
+- Include clear, descriptive messages
+- Reference the phase and task number
+- Keep commits atomic and focused
+
+## Performance Considerations
+- Implement caching for frequent queries
+- Use database indexes appropriately
+- Add connection pooling
+- Implement request rate limiting
+- Use pagination for large datasets
+
+## Security Best Practices
+- Validate all inputs with Zod
+- Sanitize database queries (Prisma handles this)
+- Add proper error messages without sensitive data
+- Use environment variables for secrets
+- Implement request logging
+
+## Assessment Specific Notes
+- Focus on core functionality over advanced features
+- Demonstrate clean architecture understanding
+- Show MCP integration capabilities
+- Keep solutions simple but professional
+- Document key decisions and trade-offs
+
+## Current Development Phase
+Starting Phase 1: Foundation Setup
+Next: Initialize TypeScript Express project with proper configuration
+
+## Priority Order
+1. Core CRUD operations
+2. Database integration
+3. Basic MCP tools
+4. Error handling and validation
+5. Testing and documentation
+6. Bonus features (caching, advanced queries)
+
+When suggesting code, prioritize clarity and maintainability over cleverness.
