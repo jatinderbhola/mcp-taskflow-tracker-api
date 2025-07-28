@@ -1,42 +1,47 @@
 export class AppError extends Error {
     constructor(
-        public statusCode: number,
-        message: string,
-        public isOperational = true,
-        public details?: unknown,
+        public readonly message: string,
+        public readonly statusCode: number = 500,
+        public readonly code: string = 'INTERNAL_ERROR',
+        public readonly details?: unknown,
     ) {
         super(message);
-        Object.setPrototypeOf(this, AppError.prototype);
+        this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor);
     }
 }
 
 export class NotFoundError extends AppError {
     constructor(message: string) {
-        super(404, message);
+        super(message, 404, 'NOT_FOUND');
+        this.name = 'NotFoundError';
     }
 }
 
 export class ValidationError extends AppError {
     constructor(message: string, details?: unknown) {
-        super(400, message, true, details);
+        super(message, 400, 'VALIDATION_ERROR', details);
+        this.name = 'ValidationError';
+    }
+}
+
+export class UnauthorizedError extends AppError {
+    constructor(message: string = 'Unauthorized') {
+        super(message, 401, 'UNAUTHORIZED');
+        this.name = 'UnauthorizedError';
+    }
+}
+
+export class ForbiddenError extends AppError {
+    constructor(message: string = 'Forbidden') {
+        super(message, 403, 'FORBIDDEN');
+        this.name = 'ForbiddenError';
     }
 }
 
 export class ConflictError extends AppError {
     constructor(message: string) {
-        super(409, message);
-    }
-}
-
-export class UnauthorizedError extends AppError {
-    constructor(message: string) {
-        super(401, message);
-    }
-}
-
-export class ForbiddenError extends AppError {
-    constructor(message: string) {
-        super(403, message);
+        super(message, 409, 'CONFLICT');
+        this.name = 'ConflictError';
     }
 } 

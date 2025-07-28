@@ -40,7 +40,7 @@ const findOverdueTasks: MCPTool = {
         projectId: z.string().optional(),
         ...PaginationSchema.shape,
     }),
-    handler: async (input) => {
+    handler: async (_input) => {
         try {
             const now = new Date();
             const tasks = await taskService.getTasks({ dueDate: now });

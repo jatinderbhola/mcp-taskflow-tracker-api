@@ -1,15 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 
-// Prevent multiple instances of Prisma Client in development
-declare global {
-    // eslint-disable-next-line no-var
-    var prisma: PrismaClient | undefined;
-}
+// Create a singleton instance of PrismaClient
+const prisma = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+});
 
-export const prisma = global.prisma || new PrismaClient();
+// Handle connection errors
+prisma.$connect().catch((error: Error) => {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
+});
 
-if (process.env.NODE_ENV !== 'production') {
-    global.prisma = prisma;
-}
+// Handle cleanup on application shutdown
+process.on('beforeExit', async () => {
+    await prisma.$disconnect();
+});
 
 export default prisma; 

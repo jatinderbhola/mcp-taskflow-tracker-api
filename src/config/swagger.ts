@@ -5,12 +5,12 @@ export const swaggerDocument = {
     info: {
         title: 'Project Tracker API',
         version: '1.0.0',
-        description: 'REST API for project and task management with MCP integration',
+        description: 'API for managing projects and tasks with MCP integration',
     },
     servers: [
         {
             url: 'http://localhost:3000',
-            description: 'Development server',
+            description: 'Local development server',
         },
     ],
     components: {
@@ -18,12 +18,15 @@ export const swaggerDocument = {
             Project: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string', format: 'cuid' },
-                    name: { type: 'string', minLength: 1, maxLength: 100 },
-                    description: { type: 'string', maxLength: 500, nullable: true },
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    description: { type: 'string', nullable: true },
                     startDate: { type: 'string', format: 'date-time' },
                     endDate: { type: 'string', format: 'date-time' },
-                    status: { type: 'string', enum: Object.values(ProjectStatus) },
+                    status: {
+                        type: 'string',
+                        enum: ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
+                    },
                     createdAt: { type: 'string', format: 'date-time' },
                     updatedAt: { type: 'string', format: 'date-time' },
                 },
@@ -32,12 +35,15 @@ export const swaggerDocument = {
             Task: {
                 type: 'object',
                 properties: {
-                    id: { type: 'string', format: 'cuid' },
-                    title: { type: 'string', minLength: 1, maxLength: 100 },
+                    id: { type: 'string' },
+                    title: { type: 'string' },
                     assignedTo: { type: 'string' },
-                    status: { type: 'string', enum: Object.values(TaskStatus) },
+                    status: {
+                        type: 'string',
+                        enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
+                    },
                     dueDate: { type: 'string', format: 'date-time' },
-                    projectId: { type: 'string', format: 'cuid' },
+                    projectId: { type: 'string' },
                     createdAt: { type: 'string', format: 'date-time' },
                     updatedAt: { type: 'string', format: 'date-time' },
                 },
@@ -46,22 +52,19 @@ export const swaggerDocument = {
             Error: {
                 type: 'object',
                 properties: {
-                    status: { type: 'string' },
+                    status: { type: 'string', enum: ['error'] },
                     message: { type: 'string' },
-                    details: { type: 'object', nullable: true },
+                    code: { type: 'string' },
+                    details: { type: 'object' },
                 },
+                required: ['status', 'message'],
             },
         },
-        responses: {
-            Error: {
-                description: 'Error response',
-                content: {
-                    'application/json': {
-                        schema: {
-                            $ref: '#/components/schemas/Error',
-                        },
-                    },
-                },
+        securitySchemes: {
+            bearerAuth: {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
             },
         },
     },
@@ -74,7 +77,10 @@ export const swaggerDocument = {
                     {
                         name: 'status',
                         in: 'query',
-                        schema: { type: 'string', enum: Object.values(ProjectStatus) },
+                        schema: {
+                            type: 'string',
+                            enum: ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
+                        },
                     },
                     {
                         name: 'startDate',
@@ -88,7 +94,7 @@ export const swaggerDocument = {
                     },
                 ],
                 responses: {
-                    '200': {
+                    200: {
                         description: 'List of projects',
                         content: {
                             'application/json': {
@@ -99,8 +105,6 @@ export const swaggerDocument = {
                             },
                         },
                     },
-                    '400': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
                 },
             },
             post: {
@@ -115,47 +119,59 @@ export const swaggerDocument = {
                     },
                 },
                 responses: {
-                    '201': {
-                        description: 'Project created',
+                    201: {
+                        description: 'Project created successfully',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
                             },
                         },
                     },
-                    '400': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
                 },
             },
         },
         '/api/projects/{id}': {
-            parameters: [
-                {
-                    name: 'id',
-                    in: 'path',
-                    required: true,
-                    schema: { type: 'string', format: 'cuid' },
-                },
-            ],
             get: {
                 tags: ['Projects'],
                 summary: 'Get a project by ID',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 responses: {
-                    '200': {
-                        description: 'Project found',
+                    200: {
+                        description: 'Project details',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
                             },
                         },
                     },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    404: {
+                        description: 'Project not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
             put: {
                 tags: ['Projects'],
                 summary: 'Update a project',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 requestBody: {
                     required: true,
                     content: {
@@ -165,42 +181,74 @@ export const swaggerDocument = {
                     },
                 },
                 responses: {
-                    '200': {
-                        description: 'Project updated',
+                    200: {
+                        description: 'Project updated successfully',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Project' },
                             },
                         },
                     },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    404: {
+                        description: 'Project not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
             delete: {
                 tags: ['Projects'],
                 summary: 'Delete a project',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 responses: {
-                    '204': { description: 'Project deleted' },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    204: { description: 'Project deleted successfully' },
+                    404: {
+                        description: 'Project not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
         },
-        '/api/projects/{id}/tasks': {
-            parameters: [
-                {
-                    name: 'id',
-                    in: 'path',
-                    required: true,
-                    schema: { type: 'string', format: 'cuid' },
-                },
-            ],
+        '/api/tasks': {
             get: {
                 tags: ['Tasks'],
-                summary: 'Get tasks for a project',
+                summary: 'Get all tasks',
+                parameters: [
+                    {
+                        name: 'status',
+                        in: 'query',
+                        schema: {
+                            type: 'string',
+                            enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED'],
+                        },
+                    },
+                    {
+                        name: 'assignedTo',
+                        in: 'query',
+                        schema: { type: 'string' },
+                    },
+                    {
+                        name: 'dueDate',
+                        in: 'query',
+                        schema: { type: 'string', format: 'date' },
+                    },
+                ],
                 responses: {
-                    '200': {
+                    200: {
                         description: 'List of tasks',
                         content: {
                             'application/json': {
@@ -211,13 +259,11 @@ export const swaggerDocument = {
                             },
                         },
                     },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
                 },
             },
             post: {
                 tags: ['Tasks'],
-                summary: 'Create a new task in project',
+                summary: 'Create a new task',
                 requestBody: {
                     required: true,
                     content: {
@@ -227,48 +273,59 @@ export const swaggerDocument = {
                     },
                 },
                 responses: {
-                    '201': {
-                        description: 'Task created',
+                    201: {
+                        description: 'Task created successfully',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
                             },
                         },
                     },
-                    '400': { $ref: '#/components/responses/Error' },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
                 },
             },
         },
         '/api/tasks/{id}': {
-            parameters: [
-                {
-                    name: 'id',
-                    in: 'path',
-                    required: true,
-                    schema: { type: 'string', format: 'cuid' },
-                },
-            ],
             get: {
                 tags: ['Tasks'],
                 summary: 'Get a task by ID',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 responses: {
-                    '200': {
-                        description: 'Task found',
+                    200: {
+                        description: 'Task details',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
                             },
                         },
                     },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    404: {
+                        description: 'Task not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
             put: {
                 tags: ['Tasks'],
                 summary: 'Update a task',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 requestBody: {
                     required: true,
                     content: {
@@ -278,25 +335,45 @@ export const swaggerDocument = {
                     },
                 },
                 responses: {
-                    '200': {
-                        description: 'Task updated',
+                    200: {
+                        description: 'Task updated successfully',
                         content: {
                             'application/json': {
                                 schema: { $ref: '#/components/schemas/Task' },
                             },
                         },
                     },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    404: {
+                        description: 'Task not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
             delete: {
                 tags: ['Tasks'],
                 summary: 'Delete a task',
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                    },
+                ],
                 responses: {
-                    '204': { description: 'Task deleted' },
-                    '404': { $ref: '#/components/responses/Error' },
-                    '500': { $ref: '#/components/responses/Error' },
+                    204: { description: 'Task deleted successfully' },
+                    404: {
+                        description: 'Task not found',
+                        content: {
+                            'application/json': {
+                                schema: { $ref: '#/components/schemas/Error' },
+                            },
+                        },
+                    },
                 },
             },
         },

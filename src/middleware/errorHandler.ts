@@ -1,59 +1,77 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { AppError } from '../utils/errors';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { AppError, NotFoundError, ValidationError } from '@/utils/errors';
 
 interface ErrorResponse {
-    status: string;
+    status: 'error';
     message: string;
+    code?: string;
     details?: unknown;
 }
 
-export const errorHandler = (
-    err: Error,
+export function errorHandler(
+    error: Error,
     _req: Request,
     res: Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _next: NextFunction,
-): void => {
-    // Handle Zod validation errors
-    if (err instanceof ZodError) {
-        const response: ErrorResponse = {
-            status: 'error',
-            message: 'Validation error',
-            details: err.errors,
-        };
-        res.status(400).json(response);
-        return;
-    }
+): void {
+    console.error('Error:', error);
 
-    // Handle custom application errors
-    if (err instanceof AppError) {
-        const response: ErrorResponse = {
-            status: 'error',
-            message: err.message,
-            details: err.details,
-        };
-        res.status(err.statusCode).json(response);
-        return;
-    }
-
-    // Handle Prisma errors
-    if (err.name === 'PrismaClientKnownRequestError') {
-        const response: ErrorResponse = {
-            status: 'error',
-            message: 'Database operation failed',
-            details: err.message,
-        };
-        res.status(400).json(response);
-        return;
-    }
-
-    // Handle unknown errors
-    console.error('Unhandled error:', err);
     const response: ErrorResponse = {
         status: 'error',
         message: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     };
+
+    if (error instanceof ZodError) {
+        response.message = 'Validation error';
+        response.code = 'VALIDATION_ERROR';
+        response.details = error.errors;
+        res.status(400).json(response);
+        return;
+    }
+
+    if (error instanceof ValidationError) {
+        response.message = error.message;
+        response.code = 'VALIDATION_ERROR';
+        res.status(400).json(response);
+        return;
+    }
+
+    if (error instanceof NotFoundError) {
+        response.message = error.message;
+        response.code = 'NOT_FOUND';
+        res.status(404).json(response);
+        return;
+    }
+
+    if (error instanceof PrismaClientKnownRequestError) {
+        switch (error.code) {
+            case 'P2002':
+                response.message = 'Unique constraint violation';
+                response.code = 'UNIQUE_VIOLATION';
+                res.status(409).json(response);
+                return;
+            case 'P2025':
+                response.message = 'Record not found';
+                response.code = 'NOT_FOUND';
+                res.status(404).json(response);
+                return;
+            default:
+                response.message = 'Database error';
+                response.code = 'DATABASE_ERROR';
+                res.status(500).json(response);
+                return;
+        }
+    }
+
+    if (error instanceof AppError) {
+        response.message = error.message;
+        response.code = error.code;
+        res.status(error.statusCode).json(response);
+        return;
+    }
+
+    // Default error response
     res.status(500).json(response);
-}; 
+} 

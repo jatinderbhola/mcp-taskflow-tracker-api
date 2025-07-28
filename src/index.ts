@@ -1,10 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
-import { errorHandler } from './middleware/errorHandler.js';
-import projectRoutes from './routes/projectRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import { swaggerDocument } from './config/swagger.js';
+import { errorHandler } from '@/middleware/errorHandler';
+import projectRoutes from '@/routes/projectRoutes';
+import taskRoutes from '@/routes/taskRoutes';
+import { swaggerDocument } from '@/config/swagger';
 
 // Load environment variables
 dotenv.config();
