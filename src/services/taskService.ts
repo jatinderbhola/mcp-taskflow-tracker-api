@@ -1,6 +1,6 @@
-import { Task, TaskSchema, TaskStatus } from '../models/types';
-import prisma from '../config/database';
-import { NotFoundError } from '../utils/errors';
+import { Task, TaskSchema, TaskStatus } from '@/models/types';
+import prisma from '@/config/database';
+import { NotFoundError } from '@/utils/errors';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export class TaskService {

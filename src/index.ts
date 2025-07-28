@@ -1,10 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
-import { errorHandler } from './middleware/errorHandler';
-import projectRoutes from './routes/projectRoutes';
-import taskRoutes from './routes/taskRoutes';
-import { swaggerDocument } from './config/swagger';
+import { errorHandler } from './middleware/errorHandler.js';
+import projectRoutes from './routes/projectRoutes.js';
+import taskRoutes from './routes/taskRoutes.js';
+import { swaggerDocument } from './config/swagger.js';
 
 // Load environment variables
 dotenv.config();
@@ -37,7 +37,8 @@ app.get('/swagger.json', (_req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
+// Start Express server
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Express server is running on port ${port}`);
     console.log(`API Documentation available at http://localhost:${port}/api/docs`);
 }); 

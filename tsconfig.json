@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es2022",
-        "module": "commonjs",
+        "target": "ES2022",
+        "module": "CommonJS",
         "lib": [
-            "es2022"
+            "ES2022"
         ],
         "outDir": "./dist",
         "rootDir": "./src",
@@ -13,6 +13,13 @@
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
         "resolveJsonModule": true,
+        "declaration": true,
+        "sourceMap": true,
+        "removeComments": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
         "baseUrl": ".",
         "paths": {
             "@/*": [
@@ -20,12 +27,18 @@
             ]
         }
     },
+    "ts-node": {
+        "require": [
+            "tsconfig-paths/register"
+        ]
+    },
     "include": [
         "src/**/*"
     ],
     "exclude": [
         "node_modules",
         "dist",
-        "tests"
+        "**/*.spec.ts",
+        "**/*.test.ts"
     ]
 }

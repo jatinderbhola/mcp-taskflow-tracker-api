@@ -1,6 +1,6 @@
-import { Project, ProjectSchema, ProjectStatus } from '../models/types';
-import prisma from '../config/database';
-import { NotFoundError, ValidationError } from '../utils/errors';
+import { Project, ProjectSchema, ProjectStatus } from '@/models/types';
+import prisma from '@/config/database';
+import { NotFoundError, ValidationError } from '@/utils/errors';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export class ProjectService {

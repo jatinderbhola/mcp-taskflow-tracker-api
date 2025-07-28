@@ -3,6 +3,7 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:prettier/recommended"
     ],
     "plugins": [
@@ -10,7 +11,8 @@
     ],
     "parserOptions": {
         "ecmaVersion": 2022,
-        "sourceType": "module"
+        "sourceType": "module",
+        "project": "./tsconfig.json"
     },
     "rules": {
         "@typescript-eslint/explicit-function-return-type": "warn",
@@ -20,11 +22,22 @@
                 "argsIgnorePattern": "^_"
             }
         ],
-        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-unsafe-assignment": "error",
+        "@typescript-eslint/no-unsafe-member-access": "error",
+        "@typescript-eslint/no-unsafe-call": "error",
+        "@typescript-eslint/no-unsafe-return": "error",
+        "@typescript-eslint/restrict-template-expressions": "error",
+        "@typescript-eslint/unbound-method": "error",
         "prettier/prettier": "error"
     },
     "env": {
         "node": true,
         "jest": true
-    }
+    },
+    "ignorePatterns": [
+        "dist",
+        "node_modules",
+        "coverage"
+    ]
 }
