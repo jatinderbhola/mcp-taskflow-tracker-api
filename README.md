@@ -30,6 +30,10 @@ project-tracker-api/
 └── scripts/       # Setup and seed scripts
 ```
 
+## Architecture Overview
+
+![Architecture Diagram](docs/architecture.png)
+
 ## Getting Started
 
 1. Clone the repository

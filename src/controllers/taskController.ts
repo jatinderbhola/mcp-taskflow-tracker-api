@@ -4,15 +4,10 @@ import { ProjectService } from '@/services/projectService';
 import { TaskSchema, TaskStatus } from '@/models/types';
 
 export class TaskController {
-    constructor(
-        private readonly taskService: TaskService,
-        private readonly projectService: ProjectService,
-    ) { }
-
     /**
      * Get all tasks with optional filtering
      */
-    getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { status, assignedTo, dueDate } = req.query;
 
@@ -22,7 +17,7 @@ export class TaskController {
                 ...(dueDate && { dueDate: new Date(dueDate as string) }),
             };
 
-            const tasks = await this.taskService.getTasks(filters);
+            const tasks = await TaskService.getTasks(filters);
             res.json(tasks);
         } catch (error) {
             next(error);
@@ -32,14 +27,14 @@ export class TaskController {
     /**
      * Create a new task
      */
-    createTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static createTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const taskData = TaskSchema.parse(req.body);
 
             // Validate project exists
-            await this.projectService.validateProjectExists(taskData.projectId);
+            await ProjectService.validateProjectExists(taskData.projectId);
 
-            const task = await this.taskService.createTask(taskData);
+            const task = await TaskService.createTask(taskData);
             res.status(201).json(task);
         } catch (error) {
             next(error);
@@ -49,10 +44,10 @@ export class TaskController {
     /**
      * Get a task by ID
      */
-    getTaskById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static getTaskById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            const task = await this.taskService.getTaskById(id);
+            const task = await TaskService.getTaskById(id);
             res.json(task);
         } catch (error) {
             next(error);
@@ -62,17 +57,17 @@ export class TaskController {
     /**
      * Update a task
      */
-    updateTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static updateTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
             const taskData = TaskSchema.partial().parse(req.body);
 
             // If projectId is being updated, validate new project exists
             if (taskData.projectId) {
-                await this.projectService.validateProjectExists(taskData.projectId);
+                await ProjectService.validateProjectExists(taskData.projectId);
             }
 
-            const task = await this.taskService.updateTask(id, taskData);
+            const task = await TaskService.updateTask(id, taskData);
             res.json(task);
         } catch (error) {
             next(error);
@@ -82,10 +77,10 @@ export class TaskController {
     /**
      * Delete a task
      */
-    deleteTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static deleteTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            await this.taskService.deleteTask(id);
+            await TaskService.deleteTask(id);
             res.status(204).send();
         } catch (error) {
             next(error);
@@ -95,14 +90,14 @@ export class TaskController {
     /**
      * Get tasks for a project
      */
-    getTasksByProjectId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static getTasksByProjectId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { projectId } = req.params;
 
             // Validate project exists
-            await this.projectService.validateProjectExists(projectId);
+            await ProjectService.validateProjectExists(projectId);
 
-            const tasks = await this.taskService.getTasksByProjectId(projectId);
+            const tasks = await TaskService.getTasksByProjectId(projectId);
             res.json(tasks);
         } catch (error) {
             next(error);

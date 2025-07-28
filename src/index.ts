@@ -1,44 +1,59 @@
 import express from 'express';
-import dotenv from 'dotenv';
+import { connectRedis, disconnectRedis } from './config/redis';
+import prisma from './config/database';
+import projectRoutes from './routes/projectRoutes';
+import taskRoutes from './routes/taskRoutes';
+import { errorHandler } from './middleware/errorHandler';
 import swaggerUi from 'swagger-ui-express';
-import { errorHandler } from '@/middleware/errorHandler';
-import projectRoutes from '@/routes/projectRoutes';
-import taskRoutes from '@/routes/taskRoutes';
-import { swaggerDocument } from '@/config/swagger';
-
-// Load environment variables
-dotenv.config();
+import { swaggerDocument } from './config/swagger';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Basic health check endpoint
-app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// Health check
+app.get('/health', (_, res) => res.json({ status: 'ok' }));
 
 // API routes
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // Swagger documentation
-app.use('/api/docs', swaggerUi.serve);
-app.get('/api/docs', swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Serve Swagger JSON
-app.get('/swagger.json', (_req, res) => {
-    res.json(swaggerDocument);
-});
-
-// Error handling middleware
+// Error handling
 app.use(errorHandler);
 
-// Start Express server
-app.listen(port, () => {
-    console.log(`Express server is running on port ${port}`);
-    console.log(`API Documentation available at http://localhost:${port}/api/docs`);
-}); 
+const shutdown = async () => {
+    console.log('Shutting down gracefully...');
+    await Promise.all([
+        prisma.$disconnect(),
+        disconnectRedis(),
+    ]);
+    process.exit(0);
+};
+
+// Handle graceful shutdown
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+const start = async () => {
+    try {
+        // Connect to databases
+        await Promise.all([
+            prisma.$connect(),
+            connectRedis(),
+        ]);
+
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        await shutdown();
+    }
+};
+
+start(); 

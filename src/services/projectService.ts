@@ -1,102 +1,100 @@
-import { Project, ProjectSchema, ProjectStatus } from '@/models/types';
-import prisma from '@/config/database';
-import { NotFoundError, ValidationError } from '@/utils/errors';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Project, ProjectStatus } from '@prisma/client';
+import prisma from '../config/database';
+import { NotFoundError } from '../utils/errors';
+import { CacheService } from './cacheService';
 
 export class ProjectService {
     /**
      * Create a new project
      */
-    async createProject(data: Project): Promise<Project> {
-        const validated = ProjectSchema.parse(data);
-
-        return prisma.project.create({
-            data: validated,
-        });
+    static async createProject(data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
+        const project = await prisma.project.create({ data });
+        await CacheService.invalidateProject(project.id);
+        return project;
     }
 
     /**
-     * Get all projects with optional filtering
+     * Get all projects with optional filters
      */
-    async getProjects(filters?: {
+    static async getProjects(filters?: {
         status?: ProjectStatus;
         startDate?: Date;
         endDate?: Date;
     }): Promise<Project[]> {
+        const cacheKey = CacheService.projectKey(undefined, filters);
+        const cached = await CacheService.get<Project[]>(cacheKey);
+
+        if (cached) {
+            return cached;
+        }
+
         const where = {
             ...(filters?.status && { status: filters.status }),
             ...(filters?.startDate && { startDate: { gte: filters.startDate } }),
             ...(filters?.endDate && { endDate: { lte: filters.endDate } }),
         };
 
-        return prisma.project.findMany({
-            where,
-            include: { tasks: true },
-        });
+        const projects = await prisma.project.findMany({ where });
+        await CacheService.set(cacheKey, projects);
+        return projects;
     }
 
     /**
      * Get a project by ID
      */
-    async getProjectById(id: string): Promise<Project> {
-        const project = await prisma.project.findUnique({
-            where: { id },
-            include: { tasks: true },
-        });
+    static async getProjectById(id: string): Promise<Project> {
+        const cacheKey = CacheService.projectKey(id);
+        const cached = await CacheService.get<Project>(cacheKey);
 
+        if (cached) {
+            return cached;
+        }
+
+        const project = await prisma.project.findUnique({ where: { id } });
         if (!project) {
             throw new NotFoundError(`Project with ID ${id} not found`);
         }
 
+        await CacheService.set(cacheKey, project);
         return project;
     }
 
     /**
      * Update a project
      */
-    async updateProject(id: string, data: Partial<Project>): Promise<Project> {
-        const validated = ProjectSchema.partial().parse(data);
+    static async updateProject(id: string, data: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Project> {
+        const project = await prisma.project.update({
+            where: { id },
+            data,
+        });
 
-        try {
-            return await prisma.project.update({
-                where: { id },
-                data: validated,
-                include: { tasks: true },
-            });
-        } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-                throw new NotFoundError(`Project with ID ${id} not found`);
-            }
-            throw error;
-        }
+        await CacheService.invalidateProject(id);
+        return project;
     }
 
     /**
      * Delete a project
      */
-    async deleteProject(id: string): Promise<void> {
-        try {
-            await prisma.project.delete({
-                where: { id },
-            });
-        } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-                throw new NotFoundError(`Project with ID ${id} not found`);
-            }
-            throw error;
-        }
-    }
-
-    /**
-     * Validate project existence
-     */
-    async validateProjectExists(id: string): Promise<void> {
-        const project = await prisma.project.findUnique({
+    static async deleteProject(id: string): Promise<Project> {
+        const project = await prisma.project.delete({
             where: { id },
         });
 
-        if (!project) {
-            throw new ValidationError(`Project with ID ${id} not found`);
+        await CacheService.invalidateProject(id);
+        return project;
+    }
+
+    /**
+     * Validate project exists
+     */
+    static async validateProjectExists(id: string): Promise<void> {
+        const exists = await prisma.project.findUnique({
+            where: { id },
+            select: { id: true },
+        });
+
+        if (!exists) {
+            throw new NotFoundError(`Project with ID ${id} not found`);
         }
     }
 } 

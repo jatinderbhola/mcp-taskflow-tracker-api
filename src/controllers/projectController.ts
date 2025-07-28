@@ -3,12 +3,10 @@ import { ProjectService } from '@/services/projectService';
 import { ProjectSchema, ProjectStatus } from '@/models/types';
 
 export class ProjectController {
-    constructor(private readonly projectService: ProjectService) { }
-
     /**
      * Get all projects with optional filtering
      */
-    getProjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static getProjects = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { status, startDate, endDate } = req.query;
 
@@ -18,7 +16,7 @@ export class ProjectController {
                 ...(endDate && { endDate: new Date(endDate as string) }),
             };
 
-            const projects = await this.projectService.getProjects(filters);
+            const projects = await ProjectService.getProjects(filters);
             res.json(projects);
         } catch (error) {
             next(error);
@@ -28,10 +26,10 @@ export class ProjectController {
     /**
      * Create a new project
      */
-    createProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static createProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const projectData = ProjectSchema.parse(req.body);
-            const project = await this.projectService.createProject(projectData);
+            const project = await ProjectService.createProject(projectData);
             res.status(201).json(project);
         } catch (error) {
             next(error);
@@ -41,10 +39,10 @@ export class ProjectController {
     /**
      * Get a project by ID
      */
-    getProjectById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static getProjectById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            const project = await this.projectService.getProjectById(id);
+            const project = await ProjectService.getProjectById(id);
             res.json(project);
         } catch (error) {
             next(error);
@@ -54,11 +52,11 @@ export class ProjectController {
     /**
      * Update a project
      */
-    updateProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static updateProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
             const projectData = ProjectSchema.partial().parse(req.body);
-            const project = await this.projectService.updateProject(id, projectData);
+            const project = await ProjectService.updateProject(id, projectData);
             res.json(project);
         } catch (error) {
             next(error);
@@ -68,10 +66,10 @@ export class ProjectController {
     /**
      * Delete a project
      */
-    deleteProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    static deleteProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            await this.projectService.deleteProject(id);
+            await ProjectService.deleteProject(id);
             res.status(204).send();
         } catch (error) {
             next(error);

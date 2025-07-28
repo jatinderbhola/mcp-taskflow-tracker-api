@@ -22,8 +22,10 @@ into 2 parts, first, you must create the backend service API that interacts with
 database. Second, this API must be built into an MCP tool that would be able to be connected
 to an LLM.
 Part 1: Project Tracker API with Query Features
+
 Functional Requirements:
-Build a RESTful API to complete the following project tasks:
+
+Part 1: Build a RESTful API to complete the following project tasks:
 1. Create a new project with the fields: name, description, start_date, end_date, and
 status
 2. Add a task to a project with: title, assigned_to, status, due_date, project_id
@@ -36,6 +38,7 @@ Bonus:
 - Add caching capabilities for frequently queried data
 - Add Swagger or other API documentation
 - Add unit tests & well structured & documented code (in line comments)
+
 Part 2: Agentic Workflow with Model Context Protocol
 Extend the API you’ve built to support an agent-based interaction, where an AI agent can
 interact with your API to fetch project data and execute actions based on context.

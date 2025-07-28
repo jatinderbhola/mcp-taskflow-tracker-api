@@ -1,29 +1,24 @@
 import { Router } from 'express';
 import { TaskController } from '@/controllers/taskController';
-import { TaskService } from '@/services/taskService';
-import { ProjectService } from '@/services/projectService';
 
 const router = Router();
-const taskService = new TaskService();
-const projectService = new ProjectService();
-const taskController = new TaskController(taskService, projectService);
 
 // GET /api/tasks - Get all tasks
-router.get('/', taskController.getTasks);
+router.get('/', TaskController.getTasks);
 
 // POST /api/tasks - Create a new task
-router.post('/', taskController.createTask);
+router.post('/', TaskController.createTask);
 
 // GET /api/tasks/:id - Get a task by ID
-router.get('/:id', taskController.getTaskById);
+router.get('/:id', TaskController.getTaskById);
 
 // PUT /api/tasks/:id - Update a task
-router.put('/:id', taskController.updateTask);
+router.put('/:id', TaskController.updateTask);
 
 // DELETE /api/tasks/:id - Delete a task
-router.delete('/:id', taskController.deleteTask);
+router.delete('/:id', TaskController.deleteTask);
 
 // GET /api/tasks/project/:projectId - Get tasks for a project
-router.get('/project/:projectId', taskController.getTasksByProjectId);
+router.get('/project/:projectId', TaskController.getTasksByProjectId);
 
 export default router; 
