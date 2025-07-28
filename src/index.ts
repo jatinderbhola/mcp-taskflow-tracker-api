@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
+import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +25,8 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(undefined, {
     },
 }));
 
-// Error handling middleware will be added here
+// Error handling middleware
+app.use(errorHandler);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
