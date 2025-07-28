@@ -18,6 +18,7 @@
     "prisma:studio": "prisma studio",
     "mcp:start": "ts-node -r tsconfig-paths/register src/mcp/server.ts",
     "mcp:debug": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/mcp/server.ts",
+    "mcp:example": "ts-node -r tsconfig-paths/register src/mcp/examples/workflow.ts",
     "clean": "rimraf dist",
     "prepare": "husky install"
   },

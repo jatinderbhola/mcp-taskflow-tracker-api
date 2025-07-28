@@ -1,30 +1,24 @@
-import { Client } from '../sdk';
+import { Client, Server } from '../sdk';
 import { ProjectStatus, TaskStatus } from '@/models/types';
-
-interface Project {
-    id: string;
-    name: string;
-    description?: string;
-    startDate: Date;
-    endDate: Date;
-    status: ProjectStatus;
-}
-
-interface Task {
-    id: string;
-    title: string;
-    assignedTo: string;
-    status: TaskStatus;
-    dueDate: Date;
-    projectId: string;
-}
+import { projectTools } from '../tools/projectTools';
+import { taskTools } from '../tools/taskTools';
 
 async function exampleWorkflow(): Promise<void> {
-    const client = new Client();
+    // Create and start server
+    const server = new Server({
+        name: 'project-tracker-mcp',
+        version: '1.0.0',
+        title: 'Project Tracker MCP Server',
+        tools: [...projectTools, ...taskTools],
+    });
+    await server.start();
+
+    // Create client connected to server
+    const client = new Client(server);
 
     try {
-        // Create a new project
-        const createProjectResult = await client.invoke<{ project: Project }>('create_project', {
+        console.log('1. Creating a new project...');
+        const createProjectResult = await client.invoke<{ project: any }>('create_project', {
             name: 'Example Project',
             description: 'A test project created via MCP',
             startDate: new Date(),
@@ -37,10 +31,10 @@ async function exampleWorkflow(): Promise<void> {
         }
 
         const projectId = createProjectResult.data.project.id;
-        console.log('Created project:', createProjectResult.data.project);
+        console.log('Project created:', createProjectResult.data.project);
 
-        // Create tasks in the project
-        const tasks = [
+        console.log('\n2. Creating tasks in the project...');
+        const taskDataList = [
             {
                 title: 'Task 1',
                 assignedTo: 'user1@example.com',
@@ -57,49 +51,77 @@ async function exampleWorkflow(): Promise<void> {
             },
         ];
 
-        for (const taskData of tasks) {
-            const createTaskResult = await client.invoke<{ task: Task }>('create_task', taskData);
+        for (const taskData of taskDataList) {
+            const createTaskResult = await client.invoke<{ task: any }>('create_task', taskData);
             if (!createTaskResult.success || !createTaskResult.data) {
                 throw new Error(`Failed to create task: ${createTaskResult.error}`);
             }
-            console.log('Created task:', createTaskResult.data.task);
+            console.log('Task created:', createTaskResult.data.task);
         }
 
-        // Update project status to IN_PROGRESS
-        const updateProjectResult = await client.invoke<{ project: Project }>('update_project_status', {
+        console.log('\n3. Getting project status...');
+        const projectStatusResult = await client.invoke<{ status: string }>('get_project_status', {
+            id: projectId,
+        });
+        if (projectStatusResult.success && projectStatusResult.data) {
+            console.log('Project status:', projectStatusResult.data.status);
+        }
+
+        console.log('\n4. Updating project status to IN_PROGRESS...');
+        const updateProjectResult = await client.invoke<{ project: any }>('update_project_status', {
             id: projectId,
             status: ProjectStatus.IN_PROGRESS,
         });
-
-        if (!updateProjectResult.success || !updateProjectResult.data) {
-            throw new Error(`Failed to update project status: ${updateProjectResult.error}`);
+        if (updateProjectResult.success && updateProjectResult.data) {
+            console.log('Updated project:', updateProjectResult.data.project);
         }
-        console.log('Updated project status:', updateProjectResult.data.project);
 
-        // Find tasks by assignee
-        const findTasksResult = await client.invoke<{ tasks: Task[] }>('get_tasks_by_assignee', {
+        console.log('\n5. Finding projects by status...');
+        const findProjectsResult = await client.invoke<{ projects: any[] }>('find_projects_by_status', {
+            status: ProjectStatus.IN_PROGRESS,
+        });
+        if (findProjectsResult.success && findProjectsResult.data) {
+            console.log('Found projects:', findProjectsResult.data.projects);
+        }
+
+        console.log('\n6. Finding tasks by assignee...');
+        const findTasksResult = await client.invoke<{ tasks: any[] }>('get_tasks_by_assignee', {
             assignedTo: 'user1@example.com',
         });
-
-        if (!findTasksResult.success || !findTasksResult.data) {
-            throw new Error(`Failed to find tasks: ${findTasksResult.error}`);
+        if (findTasksResult.success && findTasksResult.data) {
+            console.log('Tasks for user1:', findTasksResult.data.tasks);
         }
-        console.log('Tasks for user1:', findTasksResult.data.tasks);
 
-        // Find overdue tasks
-        const overdueTasksResult = await client.invoke<{ tasks: Task[] }>('find_overdue_tasks', {});
-
-        if (!overdueTasksResult.success || !overdueTasksResult.data) {
-            throw new Error(`Failed to find overdue tasks: ${overdueTasksResult.error}`);
+        console.log('\n7. Finding overdue tasks...');
+        const overdueTasksResult = await client.invoke<{ tasks: any[] }>('find_overdue_tasks', {});
+        if (overdueTasksResult.success && overdueTasksResult.data) {
+            console.log('Overdue tasks:', overdueTasksResult.data.tasks);
         }
-        console.log('Overdue tasks:', overdueTasksResult.data.tasks);
 
+        console.log('\n8. Getting task details...');
+        const foundTasks = findTasksResult.success && findTasksResult.data?.tasks;
+        if (foundTasks && foundTasks.length > 0) {
+            const taskId = foundTasks[0].id;
+            const taskDetailsResult = await client.invoke<{ task: any }>('get_task_details', {
+                id: taskId,
+            });
+            if (taskDetailsResult.success && taskDetailsResult.data) {
+                console.log('Task details:', taskDetailsResult.data.task);
+            }
+        }
+
+        console.log('\nWorkflow completed successfully!');
     } catch (error) {
         console.error('Workflow failed:', error);
+    } finally {
+        // Exit the process after completion
+        process.exit(0);
     }
 }
 
-// Run the example workflow if this file is executed directly
-if (require.main === module) {
-    exampleWorkflow().catch(console.error);
-} 
+// Run the example workflow
+console.log('Starting example workflow...\n');
+exampleWorkflow().catch(error => {
+    console.error('Workflow failed:', error);
+    process.exit(1);
+}); 

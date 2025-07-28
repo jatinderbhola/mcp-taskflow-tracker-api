@@ -8,13 +8,7 @@ dotenv.config();
 
 const tools = [...projectTools, ...taskTools];
 
-// Log available tools
-console.log('Available MCP tools:');
-tools.forEach(tool => {
-    console.log(`- ${tool.name}: ${tool.description}`);
-});
-
-// Create and start MCP Server
+// Create MCP Server
 const server = new Server({
     name: 'project-tracker-mcp',
     version: '1.0.0',
@@ -22,13 +16,22 @@ const server = new Server({
     tools,
 });
 
-// Handle errors
-process.on('uncaughtException', (error: Error) => {
-    console.error('Uncaught exception:', error);
+// Start server
+server.start().catch((error: Error) => {
+    console.error('Failed to start MCP server:', error);
     process.exit(1);
 });
 
-process.on('unhandledRejection', (error: Error) => {
-    console.error('Unhandled rejection:', error);
-    process.exit(1);
+// Keep the process running
+process.stdin.resume();
+
+// Handle process signals
+process.on('SIGINT', () => {
+    console.log('\nShutting down MCP server...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\nShutting down MCP server...');
+    process.exit(0);
 }); 
