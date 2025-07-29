@@ -71,7 +71,13 @@ export class ProjectService {
                 data,
             });
 
-            await CacheService.invalidateProject(id);
+            // Cache invalidation should not fail the operation
+            try {
+                await CacheService.invalidateProject(id);
+            } catch (cacheError) {
+                console.error('Cache invalidation failed during project update:', cacheError);
+            }
+
             return project;
         } catch (error: any) {
             if (error.code === 'P2025' || error.message.includes('Record not found')) {
@@ -86,11 +92,20 @@ export class ProjectService {
      */
     static async deleteProject(id: string): Promise<ProjectWithDates> {
         try {
+            // delete all tasks associated with the project
+            await prisma.task.deleteMany({ where: { projectId: id } });
+
             const project = await prisma.project.delete({
                 where: { id },
             });
 
-            await CacheService.invalidateProject(id);
+            // Cache invalidation should not fail the operation
+            try {
+                await CacheService.invalidateProject(id);
+            } catch (cacheError) {
+                console.error('Cache invalidation failed during project deletion:', cacheError);
+            }
+
             return project;
         } catch (error: any) {
             if (error.code === 'P2025' || error.message.includes('Record not found')) {

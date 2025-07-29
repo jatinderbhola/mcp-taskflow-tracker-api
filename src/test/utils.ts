@@ -25,6 +25,7 @@ export const TestData = {
         status: TaskStatus.TODO,
         dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
         assignedTo: 'test.user@example.com',
+        assigneeName: null,
         projectId,
         ...override,
     }),

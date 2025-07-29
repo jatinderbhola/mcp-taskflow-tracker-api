@@ -67,14 +67,19 @@ export class CacheService {
      * Invalidate project-related cache
      */
     static async invalidateProject(projectId: string): Promise<void> {
-        const keys = [
-            this.projectKey(projectId),
-            this.projectKey(), // all projects
-            this.taskKey(undefined, projectId), // project tasks
-        ];
+        try {
+            const keys = [
+                this.projectKey(projectId),
+                this.projectKey(), // all projects
+                this.taskKey(undefined, projectId), // project tasks
+            ];
 
-        for (const key of keys) {
-            await this.del(key);
+            for (const key of keys) {
+                await this.del(key);
+            }
+        } catch (error) {
+            // Ignore errors during cache invalidation, especially during cleanup
+            console.error('Cache invalidation error (ignored):', error);
         }
     }
 
@@ -82,15 +87,20 @@ export class CacheService {
      * Invalidate task-related cache
      */
     static async invalidateTask(taskId: string, projectId: string): Promise<void> {
-        const keys = [
-            this.taskKey(taskId),
-            this.taskKey(undefined, projectId), // project tasks
-            this.taskKey(), // all tasks
-            this.projectKey(projectId), // project details
-        ];
+        try {
+            const keys = [
+                this.taskKey(taskId),
+                this.taskKey(undefined, projectId), // project tasks
+                this.taskKey(), // all tasks
+                this.projectKey(projectId), // project details
+            ];
 
-        for (const key of keys) {
-            await this.del(key);
+            for (const key of keys) {
+                await this.del(key);
+            }
+        } catch (error) {
+            // Ignore errors during cache invalidation, especially during cleanup
+            console.error('Cache invalidation error (ignored):', error);
         }
     }
 } 

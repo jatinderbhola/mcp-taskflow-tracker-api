@@ -32,7 +32,7 @@ export const ProjectSchema = z.object({
 export const TaskSchema = z.object({
     title: z.string().min(1).max(100),
     assignedTo: z.string().min(1),
-    assigneeName: z.string().optional(),
+    assigneeName: z.string().nullable().optional(),
     status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']),
     dueDate: z.coerce.date(),
     projectId: z.string(),

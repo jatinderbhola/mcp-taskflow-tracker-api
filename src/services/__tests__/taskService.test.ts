@@ -15,6 +15,7 @@ describe('TaskService', () => {
             const taskData = TestData.task(project.id, {
                 title: 'New Task',
                 assignedTo: 'user@example.com',
+                assigneeName: 'User',
                 status: TaskStatus.TODO,
             });
 

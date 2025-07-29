@@ -11,7 +11,14 @@ export class TaskService {
      */
     static async createTask(data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<TaskWithDates> {
         const task = await prisma.task.create({ data });
-        await CacheService.invalidateTask(task.id, task.projectId);
+
+        // Cache invalidation should not fail the operation
+        try {
+            await CacheService.invalidateTask(task.id, task.projectId);
+        } catch (cacheError) {
+            console.error('Cache invalidation failed during task creation:', cacheError);
+        }
+
         return task;
     }
 
@@ -92,7 +99,13 @@ export class TaskService {
                 data,
             });
 
-            await CacheService.invalidateTask(id, task.projectId);
+            // Cache invalidation should not fail the operation
+            try {
+                await CacheService.invalidateTask(id, task.projectId);
+            } catch (cacheError) {
+                console.error('Cache invalidation failed during task update:', cacheError);
+            }
+
             return task;
         } catch (error: any) {
             if (error.code === 'P2025' || error.message.includes('Record not found')) {
@@ -111,7 +124,13 @@ export class TaskService {
                 where: { id },
             });
 
-            await CacheService.invalidateTask(id, task.projectId);
+            // Cache invalidation should not fail the operation
+            try {
+                await CacheService.invalidateTask(id, task.projectId);
+            } catch (cacheError) {
+                console.error('Cache invalidation failed during task deletion:', cacheError);
+            }
+
             return task;
         } catch (error: any) {
             if (error.code === 'P2025' || error.message.includes('Record not found')) {
