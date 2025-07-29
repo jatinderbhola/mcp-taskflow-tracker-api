@@ -1,6 +1,27 @@
 # Project Tracker API with MCP Integration
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.18-red.svg)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.10-orange.svg)](https://www.prisma.io/)
+[![Redis](https://img.shields.io/badge/Redis-5.6-red.svg)](https://redis.io/)
+[![Jest](https://img.shields.io/badge/Jest-29.0-yellow.svg)](https://jestjs.io/)
+[![MCP](https://img.shields.io/badge/MCP-1.17-purple.svg)](https://modelcontextprotocol.io/)
+[![License](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+
 A TypeScript-based REST API for project and task management with MCP (Model Context Protocol) integration, built for RBC technical assessment.
+
+## 👨‍💻 Author
+
+**Jatinder (Jay) Bhola** - Engineering Leader & Tech Lead
+
+- 🏠 **Location**: Toronto, ON, Canada
+- 💼 **Current Role**: Software Engineer Tech Lead @ SSENSE
+- 🎯 **Expertise**: Cloud-Native & Event-Driven Architectures, Building Scalable Systems
+- 🔗 **Connect**: [GitHub](https://github.com/jatinderbhola) | [LinkedIn](https://www.linkedin.com/in/jatinderbhola)
+
+> *"Engineering leader with 10+ years of experience improving developer workflows and scaling cloud-native systems. Proven track record in leading and delivering high-impact, customer-facing platforms and empowering engineering teams to build fast, resilient web applications."*
 
 ## 🏗️ Architecture Overview
 
