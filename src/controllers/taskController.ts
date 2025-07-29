@@ -159,6 +159,7 @@ export class TaskController {
             } else {
                 recommendations.push('Continue monitoring task progress');
             }
+            // EXPANSION: Add more recommendations based on workload score
 
             const analysis = {
                 assignee,

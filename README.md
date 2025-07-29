@@ -84,8 +84,9 @@ node scripts/test-mcp.js
 node scripts/test-mcp-inspector.js
 
 # Use MCP Inspector for interactive testing
+```
 npx @modelcontextprotocol/inspector node dist/mcp/server.js
-   ```
+```
 
 ## Database Configuration
 
@@ -125,33 +126,9 @@ USE_MAIN_DB_FOR_TESTS=false
    npm run test:verify-env
    ```
 
-## MCP Integration
+## 🤖 MCP Integration
 
-The project includes a complete MCP (Model Context Protocol) implementation for AI agent integration:
-
-### MCP Tools
-
-1. **`natural_language_query`** - Process natural language queries about projects and tasks
-2. **`workload_analysis`** - Analyze workload for specific assignees
-3. **`risk_assessment`** - Assess project risks and provide recommendations
-
-### Example Usage
-
-```bash
-# Test MCP server
-npm run mcp:test
-
-# Interactive testing with MCP Inspector
-npm run mcp:inspector
-```
-
-### Natural Language Examples
-
-- "Show me Bob's overdue tasks"
-- "Analyze Alice's workload"
-- "What's the risk level for Project Alpha?"
-
-For detailed MCP documentation, see [docs/README.md](docs/README.md).
+For detailed MCP documentation and architecture, see [docs/ASSESSMENT_DEMONSTRATION.md](docs/ASSESSMENT_DEMONSTRATION.md).
 
 ## Available Scripts
 
@@ -213,9 +190,6 @@ npm test
 npm run test:unit
 npm run test:integration
 
-# Run with coverage
-npm run test:coverage
-
 # Debug environment setup
 npm run test:verify-env
 ```
@@ -249,159 +223,12 @@ Once the server is running, visit `/api/docs` for the Swagger documentation with
 - **Projects**: CRUD operations for project management
 - **Tasks**: CRUD operations for task management
 
-## MCP Integration
+## Security and TODOs
 
-The API includes MCP tools for:
-- Project status queries
-- Task management
-- Resource allocation
-- Progress tracking
-
-### MCP Tools Available
-
-- `getProjectStatus` - Get project status by ID
-- `findProjectsByStatus` - Find projects by status
-- `findProjectsByDateRange` - Find projects in date range
-- `createProject` - Create new project
-- `updateProjectStatus` - Update project status
-- `getTasksByAssignee` - Get tasks by assignee
-- `findOverdueTasks` - Find overdue tasks
-- `updateTaskStatus` - Update task status
-- `getTaskDetails` - Get task details by ID
-- `createTask` - Create new task
-
-## Part 2: Agentic Workflow with Model Context Protocol
-
-Part 2 extends the Project Tracker API to support agent-based interactions using the Model Context Protocol (MCP). This enables natural language queries and intelligent data analysis.
-
-### Features
-
-- **Natural Language Processing**: Convert human queries to structured API calls
-- **MCP Tool Integration**: 4 specialized tools for different use cases
-- **Intelligent Insights**: Generate actionable insights and recommendations
-- **Structured Responses**: JSON responses optimized for LLM consumption
-
-### Quick Start
-
-1. **Run Basic Tests**:
-   ```bash
-   npm run test:part2-basic
-   ```
-
-2. **Run Complete Example**:
-   ```bash
-   npm run test:part2-complete
-   ```
-
-3. **Start MCP Server**:
-   ```bash
-   npm run mcp:start
-   ```
-
-### Example Usage
-
-**Query**: "Show me all overdue tasks assigned to Bob"
-
-**Result**: Structured JSON with tasks, insights, and recommendations
-
-### Documentation
-
-- [Part 2 Implementation Guide](docs/PART2_IMPLEMENTATION.md)
-- [Prompt Engineering Technique](docs/PART2_IMPLEMENTATION.md#prompt-engineering-technique-and-design)
-- [Complete Example Flow](docs/PART2_IMPLEMENTATION.md#example-flow-show-me-all-overdue-tasks-assigned-to-bob)
-
-### Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Natural       │    │   MCP Server    │    │   API Client    │
-│   Language      │───▶│   (Agentic)     │───▶│   (Internal)    │
-│   Query         │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │   Prompt        │    │   Project       │
-                       │   Engine        │    │   Tracker API   │
-                       │                 │    │                 │
-                       └─────────────────┘    └─────────────────┘
-```
-
-### Agentic MCP Tools Available
-
-1. **natural_language_query**: Process natural language queries
-2. **workload_analysis**: Analyze team member workloads
-3. **risk_assessment**: Assess project risks and issues
-4. **project_status**: Get comprehensive project status
-
-### Requirements Met
-
-✅ Accepts natural language prompts  
-✅ Calls Project Tracker API internally  
-✅ Returns structured results usable by LLM  
-✅ Describes internal prompt engineering technique  
-✅ Includes example with full flow simulation
-
-## Code Quality
-
-### Architecture Principles
-
-- **DRY (Don't Repeat Yourself)**: Centralized utilities and shared logic
-- **KISS (Keep It Simple, Stupid)**: Clean, readable code
-- **SOLID Principles**: Proper separation of concerns
-- **Clean Code**: Meaningful names and small functions
-
-### Key Features
-
-- **Type Safety**: Full TypeScript implementation
-- **Error Handling**: Centralized error handling with custom error classes
-- **Caching**: Redis-based caching for frequently accessed data
-- **Validation**: Zod schema validation for all inputs
-- **Testing**: Comprehensive test coverage with isolated test environment
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Issues**:
-   ```bash
-   # Check PostgreSQL is running
-   brew services start postgresql
-   
-   # Check Redis is running
-   brew services start redis
-   ```
-
-2. **Test Database Issues**:
-   ```bash
-   # Reset test database
-   npm run test:reset
-   
-   # Verify environment
-   npm run test:verify-env
-   ```
-
-3. **Permission Issues**:
-   ```bash
-   # Check PostgreSQL permissions
-   psql -l
-   
-   # Create user if needed
-   createuser -s your_username
-   ```
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests and linting:
-   ```bash
-   npm run test:unit
-   npm run test:integration
-   npm run lint
-   ```
-4. Submit a pull request
+[Read more about the MUST HAVE security integration](/docs/SECURITY_TODO.md)
 
 ## License
+
+**Code has been produced with the help of Claude IDE**
 
 ISC 
