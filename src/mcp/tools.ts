@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PromptEngine } from './promptEngine';
+import { PromptEngine } from './promptEngine/index';
 import { ApiClient } from './apiClient';
 
 
@@ -42,11 +42,11 @@ export const mcpTools = [
 
             try {
                 // Parse the natural language prompt
-                const intent = promptEngine.parsePrompt(prompt);
+                const parsedQuery = promptEngine.parseQuery(prompt);
 
                 // Execute based on intent
-                if (intent.action === 'workload_analysis' && intent.filters.assignee) {
-                    const analysis = await apiClient.getWorkloadAnalysis(intent.filters.assignee);
+                if (parsedQuery.intent === 'analyze_workload' && parsedQuery.filters.assigneeName) {
+                    const analysis = await apiClient.getWorkloadAnalysis(parsedQuery.filters.assigneeName);
 
                     return {
                         content: [
@@ -60,9 +60,9 @@ export const mcpTools = [
                                     insights: analysis.insights,
                                     recommendations: analysis.recommendations,
                                     analysis: {
-                                        intent_recognized: intent.action,
-                                        confidence_score: intent.confidence,
-                                        filters_applied: intent.filters
+                                        intent_recognized: parsedQuery.intent,
+                                        confidence_score: parsedQuery.confidence,
+                                        filters_applied: parsedQuery.filters
                                     }
                                 }, null, 2)
                             }
@@ -72,9 +72,9 @@ export const mcpTools = [
 
                 // Default to task query
                 const tasks = await apiClient.getTasks({
-                    assigneeName: intent.filters.assignee, // Use assignee as the name
-                    status: intent.filters.status,
-                    overdue: intent.filters.overdue
+                    assigneeName: parsedQuery.filters.assigneeName,
+                    status: parsedQuery.filters.status,
+                    overdue: parsedQuery.filters.overdue
                 });
 
                 // Enhanced insights and analysis
@@ -117,15 +117,15 @@ export const mcpTools = [
                             type: 'text',
                             text: JSON.stringify({
                                 query: prompt,
-                                summary: `Found ${tasks.length} tasks${intent.filters.assignee ? ` for ${intent.filters.assignee}` : ''}`,
+                                summary: `Found ${tasks.length} tasks${parsedQuery.filters.assigneeName ? ` for ${parsedQuery.filters.assigneeName}` : ''}`,
                                 success: true,
                                 data: tasks,
                                 insights,
                                 recommendations,
                                 analysis: {
-                                    intent_recognized: intent.action,
-                                    confidence_score: intent.confidence,
-                                    filters_applied: intent.filters,
+                                    intent_recognized: parsedQuery.intent,
+                                    confidence_score: parsedQuery.confidence,
+                                    filters_applied: parsedQuery.filters,
                                     task_breakdown: {
                                         total: tasks.length,
                                         overdue: overdueTasks.length,
