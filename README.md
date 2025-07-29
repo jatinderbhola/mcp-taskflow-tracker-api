@@ -57,36 +57,74 @@ project-tracker-api/
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies:
+### Quick Setup (Recommended)
+
+**For the interviewer or anyone who wants to get everything running quickly:**
+
+```bash
+# One-command setup (recommended)
+npm run setup
+```
+
+This will:
+- ✅ Install all dependencies
+- ✅ Start PostgreSQL and Redis services
+- ✅ Create databases and run migrations
+- ✅ Seed test data
+- ✅ Build the project
+- ✅ Run tests to verify everything works
+- ✅ Create environment configuration
+
+**After setup, run the demo to see all features:**
+```bash
+# Start the API server in one terminal
+npm run dev
+
+# Run the demo in another terminal
+npm run demo
+```
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+1. **Clone the repository**
+2. **Install dependencies**:
    ```bash
    npm install
    ```
-3. Copy `.env.example` to `.env` and update the values
-4. Initialize the database:
+3. **Initialize the database**:
    ```bash
+   # Create databases
+   createdb taskflow
+   createdb taskflow_test
+   
+   # Generate Prisma client
    npm run prisma:generate
+   
+   # Run migrations
    npm run prisma:migrate
    ```
-5. Start the development server:
+4. **Seed test data**:
+   ```bash
+   node scripts/seed-test-data.js
+   ```
+5. **Build the project**:
+   ```bash
+   npm run build
+   ```
+6. **Start the development server**:
    ```bash
    npm run dev
    ```
-6. Test MCP Integration:
+7. **Test MCP Integration**:
    ```bash
-   # Build the project
-   npm run build
-   
    # Test MCP server
-node scripts/test-mcp.js
-
-# Test MCP server with JSON protocol
-node scripts/test-mcp-inspector.js
-
-# Use MCP Inspector for interactive testing
-```
-npx @modelcontextprotocol/inspector node dist/mcp/server.js
-```
+   npm run mcp:test
+   
+   # Interactive testing with MCP Inspector
+   npm run mcp:inspector
+   ```
 
 ## Database Configuration
 
@@ -136,8 +174,9 @@ For detailed MCP documentation and architecture, see [docs/ASSESSMENT_DEMONSTRAT
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build for production
 - `npm start` - Start production server
-- `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+
+- `npm run lint` - Run ESLint [TODO]
 
 ### Database Management
 - `npm run prisma:generate` - Generate Prisma client
