@@ -168,7 +168,7 @@ export class PromptEngine {
 
     private debug(message: string, data?: any) {
         if (this.debugMode) {
-            console.log(`[PromptEngine] ${message}`, data);
+            console.error(`[PromptEngine] ${message}`, data);
             // PRODUCTION: Replace with structured logging (Winston, etc.)
         }
     }

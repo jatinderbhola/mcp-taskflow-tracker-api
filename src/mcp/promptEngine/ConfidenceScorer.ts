@@ -116,7 +116,7 @@ export class ConfidenceScorer {
 
     private debug(message: string, data?: any) {
         if (this.debugMode) {
-            console.log(`[ConfidenceScorer] ${message}`, data);
+            console.error(`[ConfidenceScorer] ${message}`, data);
             // PRODUCTION: Replace with structured logging (Winston, etc.)
         }
     }

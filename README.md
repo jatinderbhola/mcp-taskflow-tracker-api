@@ -119,10 +119,10 @@ The project includes a complete MCP (Model Context Protocol) implementation for 
 
 ```bash
 # Test MCP server
-node scripts/test-mcp.js
+npm run mcp:test
 
 # Interactive testing with MCP Inspector
-npx @modelcontextprotocol/inspector node dist/mcp/server.js
+npm run mcp:inspector
 ```
 
 ### Natural Language Examples
@@ -131,7 +131,7 @@ npx @modelcontextprotocol/inspector node dist/mcp/server.js
 - "Analyze Alice's workload"
 - "What's the risk level for Project Alpha?"
 
-For detailed MCP documentation, see [docs/MCP_IMPLEMENTATION.md](docs/MCP_IMPLEMENTATION.md).
+For detailed MCP documentation, see [docs/README.md](docs/README.md).
 
 ## Available Scripts
 
@@ -162,7 +162,8 @@ For detailed MCP documentation, see [docs/MCP_IMPLEMENTATION.md](docs/MCP_IMPLEM
 ### MCP Integration
 - `npm run mcp:start` - Start MCP server
 - `npm run mcp:debug` - Start MCP server in debug mode
-- `npm run mcp:example` - Run example MCP workflow
+- `npm run mcp:test` - Run unified MCP tests
+- `npm run mcp:inspector` - Start MCP Inspector for interactive testing
 
 ## Testing
 

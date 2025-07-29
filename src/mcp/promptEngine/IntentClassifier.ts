@@ -103,7 +103,7 @@ export class IntentClassifier {
 
     private debug(message: string, data?: any) {
         if (this.debugMode) {
-            console.log(`[IntentClassifier] ${message}`, data);
+            console.error(`[IntentClassifier] ${message}`, data);
             // PRODUCTION: Replace with structured logging (Winston, etc.)
         }
     }

@@ -142,7 +142,7 @@ export class EntityExtractor {
 
     private debug(message: string, data?: any) {
         if (this.debugMode) {
-            console.log(`[EntityExtractor] ${message}`, data);
+            console.error(`[EntityExtractor] ${message}`, data);
             // PRODUCTION: Replace with structured logging (Winston, etc.)
         }
     }

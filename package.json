@@ -22,7 +22,8 @@
     "prisma:studio:main": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/taskflow_db\" prisma studio",
     "mcp:start": "ts-node src/mcp/server.ts",
     "mcp:debug": "ts-node-dev --respawn --transpile-only src/mcp/server.ts",
-    "mcp:example": "ts-node src/mcp/examples/unifiedWorkflow.ts"
+    "mcp:test": "node scripts/test-mcp-unified.js",
+    "mcp:inspector": "npx @modelcontextprotocol/inspector node dist/mcp/server.js"
   },
   "keywords": [
     "typescript",
