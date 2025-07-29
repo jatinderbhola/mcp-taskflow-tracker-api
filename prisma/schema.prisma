@@ -43,6 +43,7 @@ model Task {
   id         String     @id @default(cuid())
   title      String
   assignedTo String     @map("assigned_to")
+  assigneeName String?  @map("assignee_name")
   status     TaskStatus
   dueDate    DateTime   @map("due_date")
   projectId  String     @map("project_id")

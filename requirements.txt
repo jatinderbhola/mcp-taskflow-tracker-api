@@ -1,68 +1,118 @@
-Senior Backend Engineer – Technical Assessment
-Overview:
-You are being tasked with building a small, functional backend application that interacts
-with a relational database (e.g., PostgreSQL) or document store (e.g., MongoDB), exposes an
-API, and integrates with an LLM agent using an MCP-compatible design to accomplish a
-real-world scenario.
-You may choose NodeJS (Typescript preferred) or Python. You may use whatever server
-based packages you see fit (ex. Express, flask, nestJS, etc)
-Time: This assessment should take you 3 – 5 hours
-Deliverables:
-• A GitHub repository with:
-• API source code
-• README with setup and explanation
-• Integration with an MCP agentic workflow
-• An architecture diagram (drawn via draw.io, or hand drawn image accepted)
-Scenario:
-You are building the backend for a Project Tracker used by AI agents to log tasks, fetch
-updates, and analyze progress based on a user query to a LLM Chatbot. This system will
-enable a project manager to quickly retrieve in flight project statuses, filter for specific
-project details/tasks and make updates/manage ongoing work items. This project is broken
-into 2 parts, first, you must create the backend service API that interacts with the project
-database. Second, this API must be built into an MCP tool that would be able to be connected
-to an LLM.
-Part 1: Project Tracker API with Query Features
+# Cursor IDE Prompt - Fix MCP Setup for RBC Assessment
 
-Functional Requirements:
+**Copy and paste this prompt directly into Cursor IDE:**
 
-Part 1: Build a RESTful API to complete the following project tasks:
-1. Create a new project with the fields: name, description, start_date, end_date, and
-status
-2. Add a task to a project with: title, assigned_to, status, due_date, project_id
-3. Retrieve a project and its associated tasks
-4. Query/filter projects by fields
-Technical Requirements:
-- Use an in-memory or real DB (eg. PostgreSQL, MongoDB, etc)
-- Add schema validation and error handling
-Bonus:
-- Add caching capabilities for frequently queried data
-- Add Swagger or other API documentation
-- Add unit tests & well structured & documented code (in line comments)
+---
 
-Part 2: Agentic Workflow with Model Context Protocol
-Extend the API you’ve built to support an agent-based interaction, where an AI agent can
-interact with your API to fetch project data and execute actions based on context.
-Requirements:
-- Build a basic MCP-compatible tool or function that can interact with an agentic workflow
-to complete the following:
-- Accepts a prompt or plan (e.g., “Show me all overdue tasks assigned to Bob”)
-- Calls your Project Tracker API internally
-- Returns structured results usable by an LLM (e.g., JSON)
-- Describe your internal prompt engineering technique and design
-- Include at least one example of a user prompt, and simulate the full flow:
-- Prompt → MCP → API → Structured Result → Agent response
-Bonus:
-- Add details on how you would safeguard your LLM inputs and add guardrails to keep the
-model on track 
-Architecture Diagram
-Draw and submit a rough architecture diagram that includes:
-- API layer
-- Database (SQL or NoSQL)
-- Agentic integration with MCP
-- Optional: any pub/sub, background jobs, or observability tools you’d consider for
-production
-Use tools like Lucidchart, draw.io, or submit a hand drawn image
-Submission Instructions
-- Email your GitHub repo link to Christopher.ortiz@rbc.com & erick.chin@rbc.com
-- Ensure your README explains how to run the app and test endpoints
-- Include screenshots or link to diagrams 
+## Task: Fix MCP Integration for RBC Technical Assessment
+
+I need to fix my MCP (Model Context Protocol) setup to meet the RBC assessment requirements. The basic REST API is already working - I just need the MCP layer to demonstrate AI agent integration.
+
+## Current Issues:
+1. TypeScript import errors with MCP SDK
+2. Type errors with API response handling
+3. Need to keep implementation simple but professional
+
+## Assessment Requirements (5-8 hours total):
+- ✅ REST API is complete (already done)
+- ⏳ MCP integration to show AI agent understanding
+- ⏳ 3 essential MCP tools that call my existing API
+- ⏳ Natural language query processing
+- ⏳ Structured responses for LLM consumption
+
+## What I Need You to Fix:
+
+### 1. MCP SDK Import Issues
+Fix these import errors in `src/mcp/server.ts`:
+```typescript
+// Currently failing:
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+```
+Use the correct MCP SDK import paths that actually work.
+
+### 2. TypeScript Response Handling
+Fix the "unknown" type errors when calling my existing API:
+```typescript
+// Currently failing:
+const data = await response.json(); // 'data' is of type 'unknown'
+if (!data.success) { // Error here
+```
+Add proper type handling without over-engineering.
+
+### 3. Create 3 Essential MCP Tools
+Create exactly these tools that call my existing REST API endpoints:
+
+**Tool 1:** `natural_language_query` 
+- Accepts: `{ prompt: string }` (e.g., "Show Bob's overdue tasks")
+- Calls: My existing `/api/tasks` endpoints with filters
+- Returns: Structured JSON for LLM
+
+**Tool 2:** `workload_analysis`
+- Accepts: `{ assignee: string }`
+- Calls: My existing `/api/workload/{assignee}` endpoint
+- Returns: Workload analysis with insights
+
+**Tool 3:** `risk_assessment`
+- Accepts: `{ projectId: string }`
+- Calls: My existing `/api/projects/{projectId}/risk` endpoint
+- Returns: Risk analysis with recommendations
+
+### 4. Simple Prompt Processing
+Add basic natural language processing that can:
+- Extract person names from queries (e.g., "Bob" from "Show Bob's tasks")
+- Detect "overdue" keyword to filter tasks
+- Route to appropriate API endpoints
+- NO complex NLP libraries - just regex patterns
+
+### 5. API Integration Pattern
+Use this pattern for calling my existing REST API:
+```typescript
+const apiUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+const response = await fetch(`${apiUrl}/api/your-endpoint`);
+// Handle response with proper types
+```
+
+## Code Quality Requirements:
+- ✅ Use TypeScript with proper types (but keep simple)
+- ✅ Add error handling for API calls
+- ✅ Structure responses for LLM consumption
+- ✅ Include console logging for debugging
+- ❌ Don't over-engineer with complex patterns
+- ❌ Don't add caching, retry logic, or other advanced features
+- ❌ Keep it assessment-appropriate (2-3 hours of MCP work max)
+
+## Expected File Structure:
+```
+src/mcp/
+├── server.ts          # MCP server setup with correct imports
+├── tools.ts           # 3 MCP tools implementation
+└── types.ts           # Basic type definitions
+```
+
+## Testing Requirements:
+After fixing, I should be able to:
+1. `npm run build` without TypeScript errors
+2. `node dist/mcp/server.js` starts successfully
+3. `npx @modelcontextprotocol/inspector node dist/mcp/server.js` for testing
+4. Test queries like "Show me Bob's overdue tasks" work
+
+## Assessment Focus:
+This is for a senior backend engineer position at RBC. Show:
+- ✅ Clean, professional code structure
+- ✅ Proper TypeScript usage
+- ✅ Understanding of AI agent integration
+- ✅ Good error handling practices
+- ❌ Don't show over-engineering for a 5-8 hour assessment
+
+## Current Tech Stack:
+- Node.js + TypeScript
+- Express.js REST API (working)
+- PostgreSQL + Prisma (working)
+- MCP SDK for agent integration (needs fixing)
+
+Please fix the MCP setup focusing on getting it working cleanly rather than adding advanced features. The goal is to demonstrate understanding of AI agent integration patterns for the technical assessment.
+
+---
+
+**Priority: Fix imports → Fix types → Create 3 working tools → Test with MCP Inspector**

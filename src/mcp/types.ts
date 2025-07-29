@@ -1,51 +1,78 @@
-import { z } from 'zod';
-import { Tool } from './sdk/index.js';
+// MCP-specific types for the Project Tracker API
 
-export interface MCPToolResponse<T> {
+export interface ApiResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
-    metadata?: {
-        timestamp: string;
-        requestId?: string;
-    };
+    message?: string;
 }
 
-// Common schemas for MCP tools
-export const DateRangeSchema = z.object({
-    startDate: z.coerce.date().optional(),
-    endDate: z.coerce.date().optional(),
-});
-
-export const PaginationSchema = z.object({
-    page: z.number().int().min(1).default(1),
-    limit: z.number().int().min(1).max(100).default(10),
-});
-
-export const IdSchema = z.object({
-    id: z.string().min(1),
-});
-
-// Helper function for consistent response formatting
-export function createMCPResponse<T>(
-    success: boolean,
-    data?: T,
-    error?: string,
-): MCPToolResponse<T> {
-    return {
-        success,
-        ...(data && { data }),
-        ...(error && { error }),
-        metadata: {
-            timestamp: new Date().toISOString(),
-        },
-    };
+export interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    assignedTo: string;
+    assigneeName?: string;
+    status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
+    dueDate: string;
+    projectId: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
-// Tool type with proper schema validation
-export type MCPTool = Tool & {
+export interface Project {
+    id: string;
+    name: string;
+    description?: string;
+    status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'ON_HOLD' | 'CANCELLED';
+    startDate: string;
+    endDate: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface WorkloadAnalysis {
+    assignee: string;
+    totalTasks: number;
+    overdueTasks: number;
+    workloadScore: number;
+    statusBreakdown: {
+        TODO: number;
+        IN_PROGRESS: number;
+        COMPLETED: number;
+        BLOCKED: number;
+    };
+    insights: string[];
+    recommendations: string[];
+}
+
+export interface RiskAssessment {
+    projectId: string;
+    projectName: string;
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    riskScore: number;
+    progress: number;
+    overdueTasks: number;
+    blockedTasks: number;
+    insights: string[];
+    recommendations: string[];
+}
+
+export interface MCPTool {
     name: string;
     description: string;
-    parameters: z.ZodType;
-    handler: (params: z.infer<z.ZodType>) => Promise<unknown>;
-}; 
+    parameters: any;
+    handler: (params: any) => Promise<any>;
+}
+
+export interface QueryIntent {
+    action: string;
+    confidence: number;
+    filters: {
+        assignee?: string;
+        overdue?: boolean;
+        projectId?: string;
+        status?: string;
+    };
+    reasoning: string[];
+} 

@@ -21,6 +21,7 @@ export class TaskService {
     static async getTasks(filters?: {
         status?: TaskStatus;
         assignedTo?: string;
+        assigneeName?: string;
         dueDate?: Date;
     }): Promise<TaskWithDates[]> {
         const cacheKey = CacheService.taskKey(undefined, undefined, filters);
@@ -33,6 +34,7 @@ export class TaskService {
         const where = {
             ...(filters?.status && { status: filters.status }),
             ...(filters?.assignedTo && { assignedTo: filters.assignedTo }),
+            ...(filters?.assigneeName && { assigneeName: { contains: filters.assigneeName, mode: 'insensitive' as any } }),
             ...(filters?.dueDate && { dueDate: { lte: filters.dueDate } }),
         };
 

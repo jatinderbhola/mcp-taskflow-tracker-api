@@ -1,37 +1,115 @@
-import { Server } from './sdk';
-import { projectTools } from './tools/projectTools';
-import { taskTools } from './tools/taskTools';
-import dotenv from 'dotenv';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import { mcpTools } from './tools';
 
-// Load environment variables
-dotenv.config();
+class ProjectTrackerMCPServer {
+    private server: Server;
 
-const tools = [...projectTools, ...taskTools];
+    constructor() {
+        this.server = new Server(
+            { name: 'project-tracker-mcp', version: '1.0.0' },
+            { capabilities: { tools: {} } }
+        );
+        this.setupHandlers();
+    }
 
-// Create MCP Server
-const server = new Server({
-    name: 'project-tracker-mcp',
-    version: '1.0.0',
-    title: 'Project Tracker MCP Server',
-    tools,
-});
+    private setupHandlers() {
+        // List available tools
+        this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+            console.error('[MCP Server] Listing available tools');
 
-// Start server
-server.start().catch((error: Error) => {
-    console.error('Failed to start MCP server:', error);
-    process.exit(1);
-});
+            return {
+                tools: mcpTools.map(tool => ({
+                    name: tool.name,
+                    description: tool.description,
+                    inputSchema: {
+                        type: 'object',
+                        properties: (() => {
+                            switch (tool.name) {
+                                case 'natural_language_query':
+                                    return {
+                                        prompt: {
+                                            type: 'string',
+                                            description: 'Natural language query (e.g., "Show me Bob\'s overdue tasks")'
+                                        }
+                                    };
+                                case 'workload_analysis':
+                                    return {
+                                        assignee: {
+                                            type: 'string',
+                                            description: 'Person to analyze (e.g., "Bob", "Alice")'
+                                        }
+                                    };
+                                case 'risk_assessment':
+                                    return {
+                                        projectId: {
+                                            type: 'string',
+                                            description: 'Project ID to assess (e.g., "project-1", "alpha")'
+                                        }
+                                    };
+                                default:
+                                    return {};
+                            }
+                        })(),
+                        required: (() => {
+                            switch (tool.name) {
+                                case 'natural_language_query': return ['prompt'];
+                                case 'workload_analysis': return ['assignee'];
+                                case 'risk_assessment': return ['projectId'];
+                                default: return [];
+                            }
+                        })()
+                    }
+                }))
+            };
+        });
 
-// Keep the process running
-process.stdin.resume();
+        // Handle tool execution
+        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+            const { name, arguments: args } = request.params;
+            console.error(`[MCP Server] Executing tool: ${name}`);
 
-// Handle process signals
-process.on('SIGINT', () => {
-    console.log('\nShutting down MCP server...');
-    process.exit(0);
-});
+            try {
+                const tool = mcpTools.find(t => t.name === name);
+                if (!tool) {
+                    throw new McpError(ErrorCode.MethodNotFound, `Tool not found: ${name}`);
+                }
 
-process.on('SIGTERM', () => {
-    console.log('\nShutting down MCP server...');
-    process.exit(0);
-}); 
+                // Validate parameters
+                const validatedParams = tool.parameters.parse(args);
+
+                // Execute tool
+                const result = await tool.handler(validatedParams as any);
+
+                console.error(`[MCP Server] Tool ${name} executed successfully`);
+                return result;
+
+            } catch (error) {
+                console.error(`[MCP Server] Tool execution failed:`, error);
+
+                if (error instanceof McpError) {
+                    throw error;
+                }
+
+                throw new McpError(
+                    ErrorCode.InternalError,
+                    `Tool execution failed: ${(error as Error).message}`
+                );
+            }
+        });
+    }
+
+    async start() {
+        const transport = new StdioServerTransport();
+        await this.server.connect(transport);
+        // Note: These logs go to stderr to avoid interfering with MCP protocol
+        // but they will appear in the "Error output" section of MCP Inspector
+        console.error('[MCP Server] Project Tracker MCP Server started successfully');
+        console.error('[MCP Server] Available tools:', mcpTools.map(t => t.name).join(', '));
+    }
+}
+
+// Start the server
+const server = new ProjectTrackerMCPServer();
+server.start().catch(console.error);

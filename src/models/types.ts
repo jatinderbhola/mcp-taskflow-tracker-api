@@ -6,6 +6,7 @@ export const ProjectStatus = {
     COMPLETED: 'COMPLETED',
     ON_HOLD: 'ON_HOLD',
     CANCELLED: 'CANCELLED',
+    BLOCKED: 'BLOCKED',
 } as const;
 
 export const TaskStatus = {
@@ -31,6 +32,7 @@ export const ProjectSchema = z.object({
 export const TaskSchema = z.object({
     title: z.string().min(1).max(100),
     assignedTo: z.string().min(1),
+    assigneeName: z.string().optional(),
     status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED']),
     dueDate: z.coerce.date(),
     projectId: z.string(),

@@ -9,11 +9,12 @@ export class TaskController {
      */
     static getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { status, assignedTo, dueDate } = req.query;
+            const { status, assignedTo, assigneeName, dueDate } = req.query;
 
             const filters = {
                 ...(status && { status: status as TaskStatus }),
                 ...(assignedTo && { assignedTo: assignedTo as string }),
+                ...(assigneeName && { assigneeName: assigneeName as string }),
                 ...(dueDate && { dueDate: new Date(dueDate as string) }),
             };
 
@@ -34,7 +35,13 @@ export class TaskController {
             // Validate project exists
             await ProjectService.validateProjectExists(taskData.projectId);
 
-            const task = await TaskService.createTask(taskData);
+            // Ensure assigneeName is null if not provided
+            const taskWithName = {
+                ...taskData,
+                assigneeName: taskData.assigneeName || null
+            };
+
+            const task = await TaskService.createTask(taskWithName);
             res.status(201).json(task);
         } catch (error) {
             next(error);
@@ -99,6 +106,74 @@ export class TaskController {
 
             const tasks = await TaskService.getTasksByProjectId(projectId);
             res.json(tasks);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    /**
+     * Get workload analysis for a specific assignee
+     */
+    static getWorkloadAnalysis = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { assignee } = req.params;
+
+            // Get all tasks for the assignee (try email first, then name)
+            let tasks = await TaskService.getTasks({ assignedTo: assignee });
+            if (tasks.length === 0) {
+                // Try searching by name if email didn't work
+                tasks = await TaskService.getTasks({ assigneeName: assignee });
+            }
+
+            // Calculate workload metrics
+            const totalTasks = tasks.length;
+            const overdueTasks = tasks.filter(task =>
+                new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED'
+            ).length;
+
+            const statusBreakdown = {
+                TODO: tasks.filter(t => t.status === 'TODO').length,
+                IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
+                COMPLETED: tasks.filter(t => t.status === 'COMPLETED').length,
+                BLOCKED: tasks.filter(t => t.status === 'BLOCKED').length
+            };
+
+            // Calculate workload score (0-100)
+            const workloadScore = Math.min(100, Math.max(0,
+                (totalTasks * 10) + (overdueTasks * 20) + (statusBreakdown.IN_PROGRESS * 15)
+            ));
+
+            const insights = [
+                `${assignee} has ${totalTasks} total tasks`,
+                overdueTasks > 0 ? `⚠️ ${overdueTasks} overdue tasks need attention` : '✅ No overdue tasks',
+                statusBreakdown.IN_PROGRESS > 0 ? `🔄 ${statusBreakdown.IN_PROGRESS} tasks in progress` : 'No active tasks'
+            ];
+
+            const recommendations = [];
+            if (workloadScore > 80) {
+                recommendations.push('Consider redistributing some tasks');
+                recommendations.push('Schedule a workload review meeting');
+            } else if (overdueTasks > 0) {
+                recommendations.push('Prioritize overdue tasks');
+                recommendations.push('Set up task completion reminders');
+            } else {
+                recommendations.push('Continue monitoring task progress');
+            }
+
+            const analysis = {
+                assignee,
+                totalTasks,
+                overdueTasks,
+                workloadScore,
+                statusBreakdown,
+                insights,
+                recommendations
+            };
+
+            res.json({
+                success: true,
+                data: analysis
+            });
         } catch (error) {
             next(error);
         }

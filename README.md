@@ -52,6 +52,20 @@ project-tracker-api/
    ```bash
    npm run dev
    ```
+6. Test MCP Integration:
+   ```bash
+   # Build the project
+   npm run build
+   
+   # Test MCP server
+node scripts/test-mcp.js
+
+# Test MCP server with JSON protocol
+node scripts/test-mcp-inspector.js
+
+# Use MCP Inspector for interactive testing
+npx @modelcontextprotocol/inspector node dist/mcp/server.js
+   ```
 
 ## Database Configuration
 
@@ -90,6 +104,34 @@ USE_MAIN_DB_FOR_TESTS=false
    ```bash
    npm run test:verify-env
    ```
+
+## MCP Integration
+
+The project includes a complete MCP (Model Context Protocol) implementation for AI agent integration:
+
+### MCP Tools
+
+1. **`natural_language_query`** - Process natural language queries about projects and tasks
+2. **`workload_analysis`** - Analyze workload for specific assignees
+3. **`risk_assessment`** - Assess project risks and provide recommendations
+
+### Example Usage
+
+```bash
+# Test MCP server
+node scripts/test-mcp.js
+
+# Interactive testing with MCP Inspector
+npx @modelcontextprotocol/inspector node dist/mcp/server.js
+```
+
+### Natural Language Examples
+
+- "Show me Bob's overdue tasks"
+- "Analyze Alice's workload"
+- "What's the risk level for Project Alpha?"
+
+For detailed MCP documentation, see [docs/MCP_IMPLEMENTATION.md](docs/MCP_IMPLEMENTATION.md).
 
 ## Available Scripts
 
@@ -206,6 +248,78 @@ The API includes MCP tools for:
 - `updateTaskStatus` - Update task status
 - `getTaskDetails` - Get task details by ID
 - `createTask` - Create new task
+
+## Part 2: Agentic Workflow with Model Context Protocol
+
+Part 2 extends the Project Tracker API to support agent-based interactions using the Model Context Protocol (MCP). This enables natural language queries and intelligent data analysis.
+
+### Features
+
+- **Natural Language Processing**: Convert human queries to structured API calls
+- **MCP Tool Integration**: 4 specialized tools for different use cases
+- **Intelligent Insights**: Generate actionable insights and recommendations
+- **Structured Responses**: JSON responses optimized for LLM consumption
+
+### Quick Start
+
+1. **Run Basic Tests**:
+   ```bash
+   npm run test:part2-basic
+   ```
+
+2. **Run Complete Example**:
+   ```bash
+   npm run test:part2-complete
+   ```
+
+3. **Start MCP Server**:
+   ```bash
+   npm run mcp:start
+   ```
+
+### Example Usage
+
+**Query**: "Show me all overdue tasks assigned to Bob"
+
+**Result**: Structured JSON with tasks, insights, and recommendations
+
+### Documentation
+
+- [Part 2 Implementation Guide](docs/PART2_IMPLEMENTATION.md)
+- [Prompt Engineering Technique](docs/PART2_IMPLEMENTATION.md#prompt-engineering-technique-and-design)
+- [Complete Example Flow](docs/PART2_IMPLEMENTATION.md#example-flow-show-me-all-overdue-tasks-assigned-to-bob)
+
+### Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Natural       │    │   MCP Server    │    │   API Client    │
+│   Language      │───▶│   (Agentic)     │───▶│   (Internal)    │
+│   Query         │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │                        │
+                                ▼                        ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │   Prompt        │    │   Project       │
+                       │   Engine        │    │   Tracker API   │
+                       │                 │    │                 │
+                       └─────────────────┘    └─────────────────┘
+```
+
+### Agentic MCP Tools Available
+
+1. **natural_language_query**: Process natural language queries
+2. **workload_analysis**: Analyze team member workloads
+3. **risk_assessment**: Assess project risks and issues
+4. **project_status**: Get comprehensive project status
+
+### Requirements Met
+
+✅ Accepts natural language prompts  
+✅ Calls Project Tracker API internally  
+✅ Returns structured results usable by LLM  
+✅ Describes internal prompt engineering technique  
+✅ Includes example with full flow simulation
 
 ## Code Quality
 

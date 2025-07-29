@@ -31,7 +31,7 @@ export class ProjectService {
         }
 
         const where = {
-            ...(filters?.status && { status: filters.status }),
+            ...(filters?.status && { status: filters.status as any }),
             ...(filters?.startDate && { startDate: { gte: filters.startDate } }),
             ...(filters?.endDate && { endDate: { lte: filters.endDate } }),
         };

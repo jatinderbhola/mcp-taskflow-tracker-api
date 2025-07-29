@@ -21,4 +21,7 @@ router.delete('/:id', TaskController.deleteTask);
 // GET /api/tasks/project/:projectId - Get tasks for a project
 router.get('/project/:projectId', TaskController.getTasksByProjectId);
 
+// GET /api/workload/:assignee - Get workload analysis for assignee
+router.get('/workload/:assignee', TaskController.getWorkloadAnalysis);
+
 export default router; 
