@@ -53,7 +53,7 @@ project-tracker-api/
 
 ## Architecture Overview
 
-![Architecture Diagram](docs/architecture.png)
+![Architecture System Diagram](docs/ARCHITECTURE_DESIGN.png)
 
 ## Getting Started
 
