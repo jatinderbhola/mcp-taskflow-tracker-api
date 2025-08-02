@@ -96,6 +96,9 @@ src/
 #### Top Level
 ![Architecture System Diagram](docs/ARCHITECTURE_DESIGN.png)
 
+#### High Level
+![High Level System Diagram](docs/HIGH_LEVEL_ARCHITECTURE_DESIGN.png)
+
 #### Detail Level
 
 Detailed internal processing pipeline and decision flow
