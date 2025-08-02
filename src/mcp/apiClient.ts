@@ -1,4 +1,4 @@
-import { ApiResponse, Task, WorkloadAnalysis, RiskAssessment } from './types';
+import { ApiResponse, Task, WorkloadAnalysis, RiskAssessment } from '../models/types';
 
 export class ApiClient {
     private baseUrl: string;

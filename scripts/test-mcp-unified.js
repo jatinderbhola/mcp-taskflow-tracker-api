@@ -65,7 +65,7 @@ async function runTest(testConfig) {
                 id: 1,
                 method: 'tools/call',
                 params: {
-                    name: 'natural_language_query',
+                    name: 'Natural Language Query',
                     arguments: testConfig.query
                 }
             };

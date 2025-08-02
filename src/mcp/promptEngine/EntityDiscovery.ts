@@ -9,7 +9,7 @@
 
 import { ApiClient } from '../apiClient';
 import { CacheService } from '../../services/cacheService';
-import { Project } from '../types';
+import { Project } from '../../models/types';
 
 // EXPANSION: Add ML confidence scoring for entity recognition
 export interface EntityMatch {

@@ -522,7 +522,7 @@ export class WorkloadAnalysisProcessor {
 
 // EXPANSION: Export enhanced MCP tool
 export const workloadAnalysisTool = {
-    name: 'workload_analysis',
+    name: 'Workload Analysis',
     description: 'Comprehensive workload analysis with proactive insights and predictive recommendations',
     parameters: z.object({
         assignee: z.string()

@@ -70,6 +70,42 @@ export class NaturalLanguageQueryProcessor {
             const parsedQuery = await this.promptEngine.parseQuery(prompt);
             this.debug('Query parsed successfully:', parsedQuery);
 
+            // CRITICAL FIX: Pre-execution validation for meaningless queries
+            if (parsedQuery.confidence < 0.3 || this.isMeaninglessQuery(prompt)) {
+                const availablePeople = await this.getAvailablePeople();
+                const recommendations = [
+                    'Please provide a clear query about tasks, people, or projects',
+                    'Try asking about specific people like "show me Alice tasks"',
+                    'Or ask about general task status like "show me all tasks"'
+                ];
+
+                if (availablePeople.length > 0) {
+                    recommendations.push(`Available people: ${availablePeople.slice(0, 5).join(', ')}${availablePeople.length > 5 ? '...' : ''}`);
+                }
+
+                return {
+                    query: prompt,
+                    success: false,
+                    error: 'Invalid or unclear query',
+                    data: [],
+                    analysis: {
+                        intent_recognized: parsedQuery.intent,
+                        confidence_score: Math.max(0.1, parsedQuery.confidence - 0.3), // Further reduce confidence
+                        entities_found: {
+                            people: [],
+                            projects: [],
+                            conditions: {}
+                        },
+                        filters_applied: {},
+                        processing_time: Date.now() - startTime,
+                        reasoning: ['Query too unclear or meaningless to process'],
+                        debugInfo: parsedQuery.metadata.debugInfo
+                    },
+                    insights: ['The query could not be understood'],
+                    recommendations
+                };
+            }
+
             // Stage 2: Execute query based on intent and filters
             let data: any[] = [];
             let insights: string[] = [];
@@ -409,6 +445,34 @@ export class NaturalLanguageQueryProcessor {
     }
 
     /**
+     * Detects meaningless or invalid queries
+     * @param prompt - The user's query
+     * @returns true if the query is meaningless
+     */
+    private isMeaninglessQuery(prompt: string): boolean {
+        const trimmed = prompt.trim().toLowerCase();
+
+        // Check for completely random strings (no meaningful words)
+        const meaningfulWords = ['task', 'tasks', 'show', 'find', 'get', 'all', 'my', 'the', 'for', 'with', 'by', 'from', 'to', 'and', 'or', 'but', 'in', 'on', 'at', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'can', 'may', 'might', 'must', 'shall'];
+
+        // Check if query contains any meaningful words
+        const hasMeaningfulWords = meaningfulWords.some(word => trimmed.includes(word));
+
+        // Check for random character sequences (like "asASDASD")
+        const randomPattern = /^[a-z]{2,}[A-Z]{2,}[a-z]{2,}$/i;
+        const isRandomSequence = randomPattern.test(trimmed);
+
+        // Check for very short queries (less than 3 characters)
+        const isTooShort = trimmed.length < 3;
+
+        // Check for queries with only special characters or numbers
+        const onlySpecialChars = /^[^a-zA-Z\s]+$/;
+        const isOnlySpecialChars = onlySpecialChars.test(trimmed);
+
+        return !hasMeaningfulWords || isRandomSequence || isTooShort || isOnlySpecialChars;
+    }
+
+    /**
      * Debug logging with structured output
      * PRODUCTION: Replace with enterprise logging (Winston, Datadog)
      */
@@ -423,7 +487,7 @@ export class NaturalLanguageQueryProcessor {
 
 // EXPANSION: Export enhanced MCP tool
 export const naturalLanguageQueryTool = {
-    name: 'natural_language_query',
+    name: 'Natural Language Query',
     description: 'Process natural language queries with enhanced entity discovery and intelligent analysis',
     parameters: z.object({
         prompt: z.string()

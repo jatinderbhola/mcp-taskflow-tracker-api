@@ -23,44 +23,7 @@ class ProjectTrackerMCPServer {
                 tools: mcpTools.map(tool => ({
                     name: tool.name,
                     description: tool.description,
-                    inputSchema: {
-                        type: 'object',
-                        properties: (() => {
-                            switch (tool.name) {
-                                case 'natural_language_query':
-                                    return {
-                                        prompt: {
-                                            type: 'string',
-                                            description: 'Natural language query (e.g., "Show me John\'s overdue tasks")'
-                                        }
-                                    };
-                                case 'workload_analysis':
-                                    return {
-                                        assignee: {
-                                            type: 'string',
-                                            description: 'Person to analyze (e.g., "John", "Jane")'
-                                        }
-                                    };
-                                case 'risk_assessment':
-                                    return {
-                                        projectId: {
-                                            type: 'string',
-                                            description: 'Project ID to assess (e.g., "project-1", "alpha")'
-                                        }
-                                    };
-                                default:
-                                    return {};
-                            }
-                        })(),
-                        required: (() => {
-                            switch (tool.name) {
-                                case 'natural_language_query': return ['prompt'];
-                                case 'workload_analysis': return ['assignee'];
-                                case 'risk_assessment': return ['projectId'];
-                                default: return [];
-                            }
-                        })()
-                    }
+                    inputSchema: this.getInputSchema(tool.name)
                 }))
             };
         });
@@ -98,6 +61,63 @@ class ProjectTrackerMCPServer {
                 );
             }
         });
+    }
+
+    /**
+     * Get input schema for tool by name
+     * Simple and clean approach
+     */
+    private getInputSchema(toolName: string): any {
+        switch (toolName) {
+            case 'Natural Language Query':
+                return {
+                    type: 'object',
+                    properties: {
+                        prompt: {
+                            type: 'string',
+                            description: 'Natural language query (e.g., "Show me John\'s overdue tasks")',
+                            minLength: 5,
+                            maxLength: 500
+                        }
+                    },
+                    required: ['prompt']
+                };
+
+            case 'Workload Analysis':
+                return {
+                    type: 'object',
+                    properties: {
+                        assignee: {
+                            type: 'string',
+                            description: 'Person to analyze (e.g., "John", "Jane")',
+                            minLength: 1,
+                            maxLength: 100
+                        }
+                    },
+                    required: ['assignee']
+                };
+
+            case 'Risk Assessment':
+                return {
+                    type: 'object',
+                    properties: {
+                        projectId: {
+                            type: 'string',
+                            description: 'Project ID to assess (e.g., "project-1", "alpha")',
+                            minLength: 1,
+                            maxLength: 50
+                        }
+                    },
+                    required: ['projectId']
+                };
+
+            default:
+                return {
+                    type: 'object',
+                    properties: {},
+                    required: []
+                };
+        }
     }
 
     async start() {

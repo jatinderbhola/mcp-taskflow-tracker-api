@@ -640,7 +640,7 @@ export class RiskAssessmentProcessor {
 
 // EXPANSION: Export enhanced MCP tool
 export const riskAssessmentTool = {
-    name: 'risk_assessment',
+    name: 'Risk Assessment',
     description: 'Comprehensive project risk assessment with pattern detection and predictive analytics',
     parameters: z.object({
         projectId: z.string()

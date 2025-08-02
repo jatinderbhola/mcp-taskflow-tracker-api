@@ -39,8 +39,16 @@ export const TaskSchema = z.object({
 });
 
 // Types derived from schemas
-export type Project = z.infer<typeof ProjectSchema>;
-export type Task = z.infer<typeof TaskSchema>;
+export type Project = z.infer<typeof ProjectSchema> & {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+export type Task = z.infer<typeof TaskSchema> & {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
 
 // Types for responses
 export interface ProjectWithTasks extends Project {
@@ -70,4 +78,40 @@ export const PaginationSchema = z.object({
 
 export const IdSchema = z.object({
     id: z.string().min(1),
-}); 
+});
+
+// API Response types
+export interface ApiResponse<T = any> {
+    success: boolean;
+    data?: T;
+    error?: string;
+    message?: string;
+}
+
+// Enhanced analysis types for MCP tools
+export interface WorkloadAnalysis {
+    assignee: string;
+    totalTasks: number;
+    overdueTasks: number;
+    workloadScore: number;
+    statusBreakdown: {
+        TODO: number;
+        IN_PROGRESS: number;
+        COMPLETED: number;
+        BLOCKED: number;
+    };
+    insights: string[];
+    recommendations: string[];
+}
+
+export interface RiskAssessment {
+    projectId: string;
+    projectName: string;
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    riskScore: number;
+    progress: number;
+    overdueTasks: number;
+    blockedTasks: number;
+    insights: string[];
+    recommendations: string[];
+} 
