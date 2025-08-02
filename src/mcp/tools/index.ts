@@ -1,6 +1,6 @@
 /**
  * Tools Index - Simplified MCP tool exports
- * 
+ *
  * PURPOSE: Centralized tool registry for enterprise-level tool management
  * EXPANSION: Dynamic tool registration, plugin architecture, tool versioning
  * PERFORMANCE: Lazy loading, intelligent caching, tool orchestration
@@ -13,8 +13,4 @@ import { workloadAnalysisTool } from './workload_analysis';
 import { riskAssessmentTool } from './risk_assessment';
 
 // EXPANSION: Consolidated tool registry for MCP server
-export const mcpTools = [
-    naturalLanguageQueryTool,
-    workloadAnalysisTool,
-    riskAssessmentTool
-];
+export const mcpTools = [naturalLanguageQueryTool, workloadAnalysisTool, riskAssessmentTool];

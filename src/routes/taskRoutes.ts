@@ -24,4 +24,4 @@ router.get('/project/:projectId', TaskController.getTasksByProjectId);
 // GET /api/workload/:assignee - Get workload analysis for assignee
 router.get('/workload/:assignee', TaskController.getWorkloadAnalysis);
 
-export default router; 
+export default router;

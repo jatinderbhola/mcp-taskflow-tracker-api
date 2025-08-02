@@ -66,7 +66,7 @@ async function testMCPQuery(testCase) {
             id: 1,
             method: 'tools/call',
             params: {
-                name: 'natural_language_query',
+                name: 'Natural Language Query',
                 arguments: { prompt: testCase.prompt }
             }
         };

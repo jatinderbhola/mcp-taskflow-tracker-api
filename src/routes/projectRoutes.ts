@@ -21,4 +21,4 @@ router.delete('/:id', ProjectController.deleteProject);
 // GET /api/projects/:projectId/risk - Get risk assessment for project
 router.get('/:projectId/risk', ProjectController.getRiskAssessment);
 
-export default router; 
+export default router;

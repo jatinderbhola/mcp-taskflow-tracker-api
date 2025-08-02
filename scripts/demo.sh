@@ -161,7 +161,6 @@ main() {
     echo "  npm run test:integration      # Run integration tests"
     echo ""
     echo "Development:"
-    echo "  npm run lint                  # Run ESLint"
     echo "  npm run format                # Format code"
     echo ""
     

@@ -71,23 +71,52 @@ Try these natural language queries:
 
 ```
 src/
-├── controllers/     # API route handlers
-├── services/        # Business logic layer  
-├── models/         # Database models (single source of truth)
-├── mcp/           # MCP server implementation
-│   ├── tools/     # MCP tools
-│   ├── promptEngine/ # AI prompt processing
-│   └── server.ts  # MCP server
-├── config/        # Database and app configuration
-└── test/          # Test setup and utilities
+├── routes/                     # API routes
+├── controllers/                # API route handlers
+├── services/                   # Business logic layer  
+├── models/                     # Database models (single source of truth)
+├── middleware/                 # API routing middleware
+├── mcp/                        # MCP server implementation
+│   ├── tools/                  # MCP tools
+│   ├── promptEngine/           # AI prompt processing
+│   └── server.ts               # MCP server
+├── config/                     # Database and app configuration
+└── test/                       # Test setup and utilities
+└── utils/                      # Utility functions
 ```
 
 ## 📚 **Documentation**
 
 - **[Technical Deep-Dive](docs/ASSESSMENT_DEMONSTRATION.md)** - Complete MCP implementation details
 - **[Production Guide](docs/PRODUCTION.md)** - Enterprise deployment and scaling
-- **[Current Capabilities](docs/EXPECTATION.md)** - What works and what doesn't
 - **[Security Roadmap](docs/SECURITY_TODO.md)** - Production security considerations
+
+### **System Design**
+
+#### Top Level
+![Architecture System Diagram](docs/ARCHITECTURE_DESIGN.png)
+
+#### Detail Level
+
+Detailed internal processing pipeline and decision flow
+
+![Detailed Internal Flow](docs/DETAILED_ARCHITECTURE_DESIGN.png)
+
+
+### **API Documentation**
+
+Once the server is running, visit the interactive API documentation:
+- **Swagger UI**: http://localhost:3000/api-docs/
+
+![Swagger](docs/SWAGGER.png)
+
+The Swagger documentation provides:
+- ✅ **Interactive API testing** - Try endpoints directly from the browser
+- ✅ **Request/Response examples** - See expected data formats
+- ✅ **Authentication details** - Understand required headers and tokens
+- ✅ **Error responses** - View possible error codes and messages
+- ✅ **Schema definitions** - Complete data models for all endpoints
+
 
 ## 🛠️ **Available Scripts**
 

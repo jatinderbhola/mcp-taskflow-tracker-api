@@ -38,4 +38,4 @@
 //         constructor(config?: ClientConfig);
 //         invoke<T = unknown>(toolName: string, params?: unknown): Promise<InvokeResult<T>>;
 //     }
-// } 
+// }
