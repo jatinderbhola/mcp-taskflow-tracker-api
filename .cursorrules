@@ -1,9 +1,9 @@
-.cursorrules - RBC MCP Project Configuration
+.cursorrules -  MCP Project Configuration
 
 ===============================================
 
 PROJECT CONTEXT:
-This is a TypeScript-based MCP (Model Context Protocol) project for RBC technical assessment demonstrating enterprise-level AI integration with sophisticated prompt engineering.
+This is a TypeScript-based MCP (Model Context Protocol) project for  technical assessment demonstrating enterprise-level AI integration with sophisticated prompt engineering.
 
 PROJECT STRUCTURE:
 ```
@@ -262,4 +262,4 @@ PERFORMANCE: Cached entity resolution for scale
 
 ---
 
-**Remember: This is for RBC assessment - show enterprise-level thinking through architecture, expansion comments, and real-world applicability!**
+**Remember: This is for  assessment - show enterprise-level thinking through architecture, expansion comments, and real-world applicability!**

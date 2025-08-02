@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# RBC Technical Assessment - Complete Setup Script
+#  Technical Assessment - Complete Setup Script
 # This script sets up the entire project environment in one run
 
 set -e  # Exit on any error
@@ -83,7 +83,7 @@ create_database() {
 # Main setup function
 main() {
     echo -e "${BLUE}================================${NC}"
-    echo -e "${BLUE}  RBC Technical Assessment Setup${NC}"
+    echo -e "${BLUE}   Technical Assessment Setup${NC}"
     echo -e "${BLUE}================================${NC}"
     echo ""
     
@@ -112,6 +112,18 @@ main() {
     
     if ! command_exists redis-server; then
         missing_tools+=("Redis")
+    fi
+
+    # Create .env file if it doesn't exist
+    # THIS IS TO KEEP IT SIMPLE FOR THE ASSESSMENT
+    if [ ! -f ".env" ]; then
+        print_status "Creating .env file..."
+        cp .env.example .env
+        print_success ".env file created"
+        echo ""
+    else
+        print_success ".env file already exists"
+        echo ""
     fi
     
     if [ ${#missing_tools[@]} -ne 0 ]; then
@@ -218,33 +230,7 @@ main() {
     node scripts/seed-test-data.js
     print_success "Test data seeded"
     echo ""
-    
-    # Create .env file if it doesn't exist
-    if [ ! -f ".env" ]; then
-        print_status "Creating .env file..."
-        cat > .env << EOF
-# Database Configuration
-DATABASE_URL="postgresql://localhost:5432/taskflow"
-TEST_DATABASE_URL="postgresql://localhost:5432/taskflow_test"
 
-# Redis Configuration
-REDIS_URL="redis://localhost:6379/0"
-TEST_REDIS_URL="redis://localhost:6379/1"
-
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# Optional: Use main database for tests (not recommended for production)
-USE_MAIN_DB_FOR_TESTS=false
-EOF
-        print_success ".env file created"
-        echo ""
-    else
-        print_success ".env file already exists"
-        echo ""
-    fi
-    
     # Final verification
     print_status "Performing final verification..."
     
@@ -276,7 +262,7 @@ EOF
     echo "5. Open Prisma Studio to view data:"
     echo "   npm run prisma:studio"
     echo ""
-    echo "Project is ready for the RBC assessment! 🚀"
+    echo "Project is ready for the  assessment! 🚀"
     echo ""
 }
 

@@ -8,7 +8,7 @@ class ProjectTrackerMCPServer {
 
     constructor() {
         this.server = new Server(
-            { name: 'project-tracker-mcp', version: '1.0.0' },
+            { name: 'mcp-taskflow-tracker', version: '1.0.0' },
             { capabilities: { tools: {} } }
         );
         this.setupHandlers();

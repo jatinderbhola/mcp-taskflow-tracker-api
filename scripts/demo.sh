@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# RBC Technical Assessment - Demo Script
+#  Technical Assessment - Demo Script
 # This script demonstrates all the features of the project
 
 set -e
@@ -105,7 +105,7 @@ test_mcp_tool() {
 
 main() {
     echo -e "${BLUE}================================${NC}"
-    echo -e "${BLUE}  RBC Assessment Demo${NC}"
+    echo -e "${BLUE}   Assessment Demo${NC}"
     echo -e "${BLUE}================================${NC}"
     echo ""
     
@@ -196,7 +196,7 @@ main() {
     
     print_success "Demo completed! 🎉"
     echo ""
-    echo "The project is ready for the RBC assessment!"
+    echo "The project is ready for the  assessment!"
     echo "All features are working and can be demonstrated."
     echo ""
 }
