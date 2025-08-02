@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/jatinderbhola-mcp-taskflow-tracker-api-badge.png)](https://mseep.ai/app/jatinderbhola-mcp-taskflow-tracker-api)
+
 # Project Tracker API with MCP Integration
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
