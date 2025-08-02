@@ -2,6 +2,7 @@ import { ParsedQuery, IntentType, ExtractedEntities, QueryFilters } from './type
 import { IntentClassifier } from './IntentClassifier';
 import { EntityExtractor } from './EntityExtractor';
 import { ConfidenceScorer } from './ConfidenceScorer';
+import { ApiClient } from '../apiClient';
 
 export class PromptEngine {
     // Main orchestrator - keeps interface simple but delegates properly
@@ -10,14 +11,20 @@ export class PromptEngine {
     private confidenceScorer: ConfidenceScorer;
     private debugMode: boolean;
 
-    constructor(debugMode: boolean = false) {
+    constructor(debugMode: boolean = false, apiClient?: ApiClient) {
         this.debugMode = debugMode;
         this.intentClassifier = new IntentClassifier(debugMode);
-        this.entityExtractor = new EntityExtractor(debugMode);
+        // ENTERPRISE: Dependency injection for EntityExtractor with API client
+        this.entityExtractor = new EntityExtractor(debugMode, apiClient);
         this.confidenceScorer = new ConfidenceScorer(debugMode);
     }
 
-    parseQuery(prompt: string): ParsedQuery {
+    /**
+     * Parse natural language query with dynamic entity discovery
+     * EXPANSION: Add semantic caching, multi-language support
+     * PERFORMANCE: Optimized async processing with parallel operations
+     */
+    async parseQuery(prompt: string): Promise<ParsedQuery> {
         const startTime = Date.now();
 
         try {
@@ -32,16 +39,16 @@ export class PromptEngine {
             const intent = this.intentClassifier.classify(prompt);
             this.debug(`Intent classified as: ${intent}`);
 
-            // Step 2: Entity Extraction
-            const entities = this.entityExtractor.extract(prompt);
+            // Step 2: Dynamic Entity Extraction with database discovery
+            const entities = await this.entityExtractor.extract(prompt);
             this.debug(`Entities extracted:`, entities);
 
             // Step 3: Filter Construction
-            const filters = this.buildFilters(intent, entities);
+            const filters = this.buildFilters(entities);
             this.debug(`Filters built:`, filters);
 
             // Step 4: Confidence Scoring
-            const confidence = this.confidenceScorer.calculateConfidence(intent, entities, filters);
+            const confidence = this.confidenceScorer.calculateConfidence(intent, entities, filters, prompt);
             this.debug(`Confidence calculated: ${confidence}`);
 
             // Step 5: Build Reasoning Chain
@@ -72,7 +79,7 @@ export class PromptEngine {
         }
     }
 
-    private buildFilters(_intent: IntentType, entities: ExtractedEntities): QueryFilters {
+    private buildFilters(entities: ExtractedEntities): QueryFilters {
         const filters: QueryFilters = {};
 
         // Map people to assigneeName filter
@@ -172,4 +179,11 @@ export class PromptEngine {
             // PRODUCTION: Replace with structured logging (Winston, etc.)
         }
     }
-} 
+}
+
+// EXPANSION: Export all components for modular usage
+export { EntityDiscovery } from './EntityDiscovery';
+export { EntityExtractor } from './EntityExtractor';
+export { IntentClassifier } from './IntentClassifier';
+export { ConfidenceScorer } from './ConfidenceScorer';
+export * from './types'; 

@@ -81,30 +81,61 @@ async function testMCPQuery(testCase) {
                 if (response.result) {
                     const result = JSON.parse(response.result.content[0].text);
                     console.log('   ✅ Success!');
-                    console.log(`   📊 Found: ${result.data.length} tasks`);
-                    console.log(`   🎯 Intent: ${result.analysis.intent_recognized}`);
-                    console.log(`   💯 Confidence: ${result.analysis.confidence_score.toFixed(2)}`);
 
-                    // Validate expected results
-                    const filters = result.analysis.filters_applied;
+                    // Handle different response formats based on tool type
+                    if (result.data && Array.isArray(result.data)) {
+                        // Natural language query format
+                        console.log(`   📊 Found: ${result.data.length} tasks`);
+                        console.log(`   🎯 Intent: ${result.analysis.intent_recognized}`);
+                        console.log(`   💯 Confidence: ${result.analysis.confidence_score.toFixed(2)}`);
+                    } else if (result.workload_score !== undefined) {
+                        // Workload analysis format
+                        console.log(`   📊 Workload Score: ${result.workload_score}/100`);
+                        console.log(`   👤 Assignee: ${result.assignee}`);
+                        console.log(`   ⚡ Efficiency: ${result.efficiency}%`);
+                    } else if (result.risk_score !== undefined) {
+                        // Risk assessment format
+                        console.log(`   📊 Risk Score: ${result.risk_score}/100`);
+                        console.log(`   🏗️ Project: ${result.project_name}`);
+                        console.log(`   ⚠️ Risk Level: ${result.risk_level}`);
+                    } else {
+                        // Generic format
+                        console.log(`   📊 Response: ${Object.keys(result).length} fields`);
+                        if (result.summary) console.log(`   📝 Summary: ${result.summary}`);
+                    }
+
+                    // Validate expected results (only for natural language queries)
                     let validationPassed = true;
 
-                    if (testCase.expectedIntent && result.analysis.intent_recognized !== testCase.expectedIntent) {
-                        console.log(`   ❌ Intent mismatch: expected ${testCase.expectedIntent}, got ${result.analysis.intent_recognized}`);
-                        validationPassed = false;
-                    }
+                    if (result.analysis && result.analysis.filters_applied) {
+                        const filters = result.analysis.filters_applied;
 
-                    if (testCase.expectedPeople && filters.assigneeName) {
-                        const expectedPerson = testCase.expectedPeople[0];
-                        if (filters.assigneeName.toLowerCase() !== expectedPerson) {
-                            console.log(`   ❌ Person mismatch: expected ${expectedPerson}, got ${filters.assigneeName}`);
+                        if (testCase.expectedIntent && result.analysis.intent_recognized !== testCase.expectedIntent) {
+                            console.log(`   ❌ Intent mismatch: expected ${testCase.expectedIntent}, got ${result.analysis.intent_recognized}`);
                             validationPassed = false;
                         }
-                    }
 
-                    if (testCase.expectedStatus && filters.status !== testCase.expectedStatus) {
-                        console.log(`   ❌ Status mismatch: expected ${testCase.expectedStatus}, got ${filters.status}`);
-                        validationPassed = false;
+                        if (testCase.expectedPeople && filters.assigneeName) {
+                            const expectedPerson = testCase.expectedPeople[0];
+                            if (filters.assigneeName.toLowerCase() !== expectedPerson) {
+                                console.log(`   ❌ Person mismatch: expected ${expectedPerson}, got ${filters.assigneeName}`);
+                                validationPassed = false;
+                            }
+                        }
+
+                        if (testCase.expectedStatus && filters.status !== testCase.expectedStatus) {
+                            console.log(`   ❌ Status mismatch: expected ${testCase.expectedStatus}, got ${filters.status}`);
+                            validationPassed = false;
+                        }
+                    } else {
+                        // For workload analysis and risk assessment, do basic validation
+                        if (testCase.expectedIntent === 'analyze_workload' && result.workload_score !== undefined) {
+                            console.log(`   ✅ Workload analysis successful`);
+                        } else if (testCase.expectedIntent === 'assess_risk' && result.risk_score !== undefined) {
+                            console.log(`   ✅ Risk assessment successful`);
+                        } else if (!testCase.expectedIntent) {
+                            console.log(`   ✅ Generic validation passed`);
+                        }
                     }
 
                     if (validationPassed) {

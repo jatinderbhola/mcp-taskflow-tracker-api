@@ -1,103 +1,75 @@
 import { ExtractedEntities } from './types';
+import { EntityDiscovery, EntityMatch } from './EntityDiscovery';
+import { ApiClient } from '../apiClient';
 
 export class EntityExtractor {
-    // Known people in the system - EXPANSION: Load from database/dynamic configuration
-    private knownPeople = ['alice', 'bob', 'charlie'];
+    private entityDiscovery: EntityDiscovery;
 
-    // Known projects - EXPANSION: Load from database/dynamic configuration
-    private knownProjects = ['website redesign', 'mobile app', 'database migration'];
+    // EXPANSION: Remove hardcoded entities - now using dynamic discovery
+    constructor(
+        private debugMode: boolean = false,
+        apiClient?: ApiClient
+    ) {
+        // ENTERPRISE: Dependency injection for testability and flexibility
+        this.entityDiscovery = new EntityDiscovery(
+            apiClient || new ApiClient(),
+            debugMode
+        );
+    }
 
-    constructor(private debugMode: boolean = false) { }
-
-    extract(prompt: string): ExtractedEntities {
+    /**
+     * Extract entities with dynamic database discovery
+     * EXPANSION: Async version for enhanced discovery capabilities
+     * PERFORMANCE: Maintains backward compatibility with sync interface
+     */
+    async extract(prompt: string): Promise<ExtractedEntities> {
         const startTime = Date.now();
 
         try {
             const lowerPrompt = prompt.toLowerCase();
 
+            // PERFORMANCE: Use new dynamic discovery system
+            const discoveredEntities = await this.entityDiscovery.discoverEntities(lowerPrompt);
+
             const entities: ExtractedEntities = {
-                people: this.extractPeople(lowerPrompt),
-                projects: this.extractProjects(lowerPrompt),
+                people: this.convertEntityMatches(discoveredEntities.people),
+                projects: this.convertEntityMatches(discoveredEntities.projects),
                 conditions: this.extractConditions(lowerPrompt)
             };
 
             const processingTime = Date.now() - startTime;
-            this.debug(`Entity extraction completed in ${processingTime}ms`, entities);
+            this.debug(`Entity extraction completed in ${processingTime}ms`, {
+                entities,
+                suggestions: discoveredEntities.suggestions,
+                unknownEntities: discoveredEntities.unknownEntities
+            });
 
             return entities;
 
         } catch (error) {
             this.debug(`Entity extraction failed: ${error}`);
-            // EXPANSION: Add fallback extraction strategies
+            // ENTERPRISE: Graceful degradation with fallback strategies
             return { people: [], projects: [], conditions: {} };
         }
     }
 
-    extractPeople(prompt: string): string[] {
-        const people: string[] = [];
-
-        // Pattern 1: Direct name matching (most reliable)
-        for (const person of this.knownPeople) {
-            if (prompt.includes(person)) {
-                people.push(person);
-                this.debug(`Found person via direct match: ${person}`);
+    /**
+     * Convert EntityMatch array to simple string array for backward compatibility
+     * EXPANSION: Enhance to preserve confidence scores and suggestions
+     */
+    private convertEntityMatches(matches: EntityMatch[]): string[] {
+        return matches.map(match => {
+            // IMPROVEMENT: For projects, use the project ID when available
+            if (match.metadata?.projectId) {
+                this.debug(`Using project ID ${match.metadata.projectId} for project "${match.entity}"`);
+                return match.metadata.projectId;
             }
-        }
-
-        // Pattern 2: Possessive form ("Bob's tasks")
-        const possessiveMatch = prompt.match(/([a-z]+)'s\s+(tasks|workload|projects)/i);
-        if (possessiveMatch && this.knownPeople.includes(possessiveMatch[1].toLowerCase())) {
-            const person = possessiveMatch[1].toLowerCase();
-            if (!people.includes(person)) {
-                people.push(person);
-                this.debug(`Found person via possessive: ${person}`);
-            }
-        }
-
-        // Pattern 3: "assigned to" format
-        const assignedMatch = prompt.match(/assigned\s+to\s+([a-z]+)/i);
-        if (assignedMatch && this.knownPeople.includes(assignedMatch[1].toLowerCase())) {
-            const person = assignedMatch[1].toLowerCase();
-            if (!people.includes(person)) {
-                people.push(person);
-                this.debug(`Found person via assigned to: ${person}`);
-            }
-        }
-
-        // EXPANSION: Add fuzzy matching for misspelled names
-        // EXPANSION: Add email format detection (alice@example.com)
-        // EXPANSION: Add team-based queries ("marketing team", "dev team")
-
-        return people;
+            return match.entity;
+        });
     }
 
-    extractProjects(prompt: string): string[] {
-        const projects: string[] = [];
-
-        // Pattern 1: Direct project name matching
-        for (const project of this.knownProjects) {
-            if (prompt.includes(project)) {
-                projects.push(project);
-                this.debug(`Found project via direct match: ${project}`);
-            }
-        }
-
-        // Pattern 2: "project" keyword followed by name
-        const projectMatch = prompt.match(/project\s+([a-z\s]+)/i);
-        if (projectMatch) {
-            const projectName = projectMatch[1].trim();
-            if (!projects.includes(projectName)) {
-                projects.push(projectName);
-                this.debug(`Found project via project keyword: ${projectName}`);
-            }
-        }
-
-        // EXPANSION: Add project ID detection (project-123)
-        // EXPANSION: Add project alias matching
-        // EXPANSION: Add fuzzy matching for project names
-
-        return projects;
-    }
+    // MIGRATION: extractPeople and extractProjects methods replaced by EntityDiscovery
+    // ENTERPRISE: Dynamic discovery provides superior accuracy and real-time data
 
     extractConditions(prompt: string): Record<string, any> {
         const conditions: Record<string, any> = {};

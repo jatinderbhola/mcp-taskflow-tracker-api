@@ -6,7 +6,8 @@ export class ConfidenceScorer {
     calculateConfidence(
         intent: IntentType,
         entities: ExtractedEntities,
-        filters: QueryFilters
+        filters: QueryFilters,
+        originalQuery?: string
     ): number {
         const startTime = Date.now();
 
@@ -31,6 +32,22 @@ export class ConfidenceScorer {
                 reasoning.push(`Found ${entities.projects.length} project(s): ${entities.projects.join(', ')}`);
             }
 
+            // CRITICAL: Penalty for missing expected entities
+            if ((intent === 'query_tasks' || intent === 'general_query') && entities.people.length === 0 && this.hasPersonReference(filters, originalQuery)) {
+                confidence -= 0.3; // Significant penalty for missing person
+                reasoning.push('Person requested but not found - confidence reduced');
+            }
+
+            if (intent === 'analyze_workload' && entities.people.length === 0) {
+                confidence -= 0.4; // Major penalty for workload analysis without person
+                reasoning.push('Workload analysis requires a person - confidence reduced');
+            }
+
+            if (intent === 'assess_risk' && entities.projects.length === 0) {
+                confidence -= 0.4; // Major penalty for risk assessment without project
+                reasoning.push('Risk assessment requires a project - confidence reduced');
+            }
+
             // Filter complexity bonus
             const filterCount = Object.keys(filters).length;
             if (filterCount > 0) {
@@ -39,7 +56,7 @@ export class ConfidenceScorer {
             }
 
             // Context validation bonus
-            if (this.validateContext(intent, entities, filters)) {
+            if (this.validateContext(intent, entities)) {
                 confidence += 0.1;
                 reasoning.push('Context validation passed');
             }
@@ -58,7 +75,7 @@ export class ConfidenceScorer {
             // EXPANSION: Add user preference learning
             // EXPANSION: Add query success rate tracking
 
-            return Math.min(confidence, 1.0);
+            return Math.max(0.1, Math.min(confidence, 1.0)); // Ensure minimum confidence of 0.1
 
         } catch (error) {
             this.debug(`Confidence calculation failed: ${error}`);
@@ -68,8 +85,7 @@ export class ConfidenceScorer {
 
     private validateContext(
         intent: IntentType,
-        entities: ExtractedEntities,
-        _filters: QueryFilters
+        entities: ExtractedEntities
     ): boolean {
         // Validate that the intent makes sense with the extracted entities
         switch (intent) {
@@ -88,6 +104,38 @@ export class ConfidenceScorer {
             default:
                 return true;
         }
+    }
+
+    private hasPersonReference(filters: QueryFilters, originalQuery?: string): boolean {
+        // Check if filters suggest a person was requested but not found
+        if (filters.assigneeName !== undefined ||
+            filters.assignee !== undefined ||
+            Object.keys(filters).some(key => key.toLowerCase().includes('assignee'))) {
+            return true;
+        }
+
+        // Check if original query contains person-like patterns
+        if (originalQuery) {
+            const lowerQuery = originalQuery.toLowerCase();
+            // Check for possessive patterns ("John's tasks")
+            if (/\b[a-z]+'s\s+(tasks|workload|projects|work)/i.test(lowerQuery)) {
+                return true;
+            }
+            // Check for "assigned to" patterns
+            if (/assigned\s+to\s+[a-z]+/i.test(lowerQuery)) {
+                return true;
+            }
+            // Check for capitalized words that might be names
+            if (/\b[A-Z][a-z]+\b/.test(originalQuery)) {
+                return true;
+            }
+            // Check for simple name + tasks pattern ("johns tasks", "alice tasks")
+            if (/\b[a-z]+\s+(tasks|workload|projects|work)/i.test(lowerQuery)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private assessQueryComplexity(

@@ -73,12 +73,8 @@ export class ApiClient {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const data = await response.json() as ApiResponse<any[]>;
-
-        if (!data.success) {
-            throw new Error(data.error || 'Failed to fetch projects');
-        }
-
-        return data.data || [];
+        // BUGFIX: API returns projects array directly, not wrapped in ApiResponse
+        const data = await response.json() as any[];
+        return Array.isArray(data) ? data : [];
     }
 } 

@@ -31,14 +31,14 @@ class ProjectTrackerMCPServer {
                                     return {
                                         prompt: {
                                             type: 'string',
-                                            description: 'Natural language query (e.g., "Show me Bob\'s overdue tasks")'
+                                            description: 'Natural language query (e.g., "Show me John\'s overdue tasks")'
                                         }
                                     };
                                 case 'workload_analysis':
                                     return {
                                         assignee: {
                                             type: 'string',
-                                            description: 'Person to analyze (e.g., "Bob", "Alice")'
+                                            description: 'Person to analyze (e.g., "John", "Jane")'
                                         }
                                     };
                                 case 'risk_assessment':

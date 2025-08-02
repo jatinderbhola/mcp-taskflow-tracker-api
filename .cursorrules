@@ -1,0 +1,265 @@
+.cursorrules - RBC MCP Project Configuration
+
+===============================================
+
+PROJECT CONTEXT:
+This is a TypeScript-based MCP (Model Context Protocol) project for RBC technical assessment demonstrating enterprise-level AI integration with sophisticated prompt engineering.
+
+PROJECT STRUCTURE:
+```
+src/
+├── controllers/     # API route handlers
+├── services/        # Business logic layer  
+├── models/         # Database models/schemas
+├── middleware/     # Validation, error handling
+├── utils/         # Helper functions
+├── mcp/            # MCP server implementation
+│   ├── promptEngine/  # Advanced NLP components (FOCUS AREA)
+│   ├── tools/         # MCP tools
+│   └── server.ts      # MCP server
+├── config/       # Database and app configuration
+└── test/         # Test setup and utilities
+```
+
+## 🎯 Current Enhancement Focus
+**PRIORITY**: Advanced prompt engineering system with dynamic entity recognition
+- Replace hardcoded entities with database-driven discovery
+- Multi-stage query pipeline architecture
+- Enterprise-level AI integration patterns
+
+## 💻 Coding Standards
+
+### TypeScript Requirements
+- **Strict mode enabled** - Use strict TypeScript throughout
+- **Explicit typing** - No `any` types unless absolutely necessary
+- **Interface-first design** - Define interfaces before implementations
+- **Async/await** - Use modern async patterns, avoid callbacks
+
+### Code Style
+```typescript
+// ✅ Good: Clear, typed interfaces
+interface ParsedQuery {
+  intent: IntentType;
+  confidence: number;
+  metadata: QueryMetadata;
+}
+
+// ✅ Good: Descriptive function names with JSDoc
+/**
+ * Discovers entities dynamically from database
+ * @param entityType - Type of entity to discover
+ * @returns Promise<Entity[]> - Resolved entities with confidence scores
+ */
+async discoverEntities(entityType: EntityType): Promise<Entity[]>
+
+// ❌ Avoid: Hardcoded values
+private knownPeople = ['alice', 'bob']; // BAD - use dynamic discovery
+
+// ✅ Good: Dynamic, database-driven
+async discoverPeople(): Promise<string[]> {
+  return this.databaseService.getUniqueAssignees();
+}
+```
+
+### Enterprise Expansion Comments
+**ALWAYS include expansion comments** showing enterprise-level thinking:
+```typescript
+// EXPANSION: Add ML-based entity recognition using spaCy/transformers
+// PRODUCTION: Implement caching layer with Redis for entity lookups  
+// SCALE: Add distributed entity resolution across multiple data sources
+// ENTERPRISE: Integrate with Active Directory for user entity resolution
+```
+
+### Error Handling Pattern
+```typescript
+// ✅ Always include comprehensive error handling
+try {
+  const result = await this.processQuery(query);
+  return { success: true, data: result };
+} catch (error) {
+  this.logger.error('Query processing failed', { query, error });
+  return { 
+    success: false, 
+    error: 'Failed to process query',
+    suggestion: 'Try rephrasing your query or check entity names'
+  };
+}
+```
+
+## 🏗️ Architecture Patterns
+
+### Clean Architecture Layers
+1. **MCP Tools Layer** - External interface (MCP protocol)
+2. **Prompt Engine Layer** - Business logic (query processing)
+3. **Service Layer** - Data access (API calls, database)
+4. **Model Layer** - Data structures (interfaces, types)
+
+### Dependency Injection
+```typescript
+// ✅ Constructor injection for testability
+class QueryProcessor {
+  constructor(
+    private entityDiscovery: EntityDiscovery,
+    private intentClassifier: IntentClassifier,
+    private apiClient: ApiClient
+  ) {}
+}
+```
+
+### Single Responsibility Principle
+- Each class should have **one clear purpose**
+- Separate **data access**, **business logic**, and **presentation**
+- **Compose complex behaviors** from simple, focused components
+
+## 🤖 MCP-Specific Guidelines
+
+### Tool Implementation Pattern
+```typescript
+// ✅ Standard MCP tool structure
+export const intelligentQueryProcessor: McpTool = {
+  name: 'intelligent_query_processor',
+  description: 'Process complex natural language queries with multi-stage analysis',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      prompt: { type: 'string', description: 'Natural language query' }
+    },
+    required: ['prompt']
+  },
+  handler: async (params: { prompt: string }) => {
+    // Multi-stage processing implementation
+  }
+};
+```
+
+### Response Format Standard
+```typescript
+// ✅ Consistent response structure for LLM consumption
+interface MCPResponse {
+  success: boolean;
+  data?: any;
+  insights: string[];           // Business insights
+  recommendations: string[];   // Actionable recommendations  
+  metadata: {
+    confidence: number;
+    processingTime: number;
+    reasoning: string[];       // Decision trail
+  };
+}
+```
+
+## 📋 File Creation Guidelines
+
+### New File Template
+```typescript
+/**
+ * [FileName] - Brief description
+ * 
+ * PURPOSE: What business problem this solves
+ * EXPANSION: Key enterprise enhancements possible
+ * PERFORMANCE: Scalability considerations  
+ * INTEGRATION: How this connects to broader systems
+ */
+
+import { /* required imports */ } from './types';
+
+// EXPANSION: Add comprehensive expansion comments
+// PRODUCTION: Add production-level considerations
+// SCALE: Add scalability notes
+
+export class ClassName {
+  constructor(
+    // Dependency injection
+  ) {}
+  
+  /**
+   * Method description with business context
+   */
+  async methodName(): Promise<ReturnType> {
+    // Implementation with error handling
+  }
+}
+```
+
+## 🚨 Critical Requirements
+
+### Database Integration
+- **NO hardcoded entities** - Always query database for real data
+- **Handle empty results gracefully** - Provide helpful suggestions
+- **Cache frequently accessed data** - Add caching layer comments
+
+### Performance Considerations
+```typescript
+// PERFORMANCE: Add performance considerations
+// CACHE: Consider caching strategy for frequent queries
+// ASYNC: Use Promise.all for parallel operations where possible
+// MEMORY: Be mindful of memory usage in large dataset processing
+```
+
+### Error Messages
+- **User-friendly errors** - No technical stack traces to users
+- **Actionable suggestions** - Tell users how to fix the problem
+- **Graceful degradation** - System keeps working even with errors
+
+## 🎯 Demo-Ready Features
+
+### Priority Implementations
+1. **Dynamic entity discovery** - Works with real database data
+2. **Multi-stage query processing** - Shows architectural sophistication  
+3. **Query chaining** - Intelligent multi-tool orchestration
+4. **Proactive insights** - Business context awareness
+
+### Demo Scenarios to Support
+```typescript
+// Support these query types for Chris demo:
+"Show me Sarah's tasks"              // Dynamic entity discovery
+"Analyze project health across team" // Multi-tool chaining  
+"Bob looks overwhelmed"              // Semantic understanding
+"What should I be worried about?"    // Proactive analysis
+```
+
+## 🛠️ Development Workflow
+
+### Before Implementing New Features
+1. **Define interfaces first** - Think through data structures
+2. **Add expansion comments** - Show enterprise thinking
+3. **Consider error cases** - What could go wrong?
+4. **Plan for scalability** - How would this work at enterprise scale?
+
+### Code Review Checklist
+- [ ] TypeScript strict compliance
+- [ ] Comprehensive error handling
+- [ ] Enterprise expansion comments
+- [ ] Performance considerations documented
+- [ ] Clean architecture separation
+- [ ] Demo scenario support
+
+## 📝 Documentation Standards
+
+### Inline Comments
+- **WHY over WHAT** - Explain business reasoning, not just code
+- **Enterprise considerations** - Always include expansion possibilities
+- **Decision rationale** - Why this approach over alternatives
+
+### Commit Messages
+```
+feat(mcp): implement dynamic entity discovery
+
+- Replace hardcoded entities with database queries
+- Add fuzzy matching for partial name resolution  
+- Include expansion comments for ML-based NER
+- Supports real-world data integration
+
+EXPANSION: Ready for spaCy/transformers integration
+PERFORMANCE: Cached entity resolution for scale
+```
+
+## 🎯 Success Metrics
+- **Works with real data** - No hardcoded test values
+- **Enterprise-ready architecture** - Clear scaling path
+- **Business context awareness** - Understands implicit needs
+- **Demo-worthy sophistication** - Impresses technical leadership
+
+---
+
+**Remember: This is for RBC assessment - show enterprise-level thinking through architecture, expansion comments, and real-world applicability!**
